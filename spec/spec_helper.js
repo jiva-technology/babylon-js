@@ -18,11 +18,11 @@ MockConnection.prototype.connect = function(jid, password, on_status_change){
 
 MockConnection.prototype.authentication_failed = function(){
     this.on_status_change(Strophe.Status.AUTHFAIL, "Bad password");
-}
+};
 
 MockConnection.prototype.connection_failed = function(){
     this.on_status_change(Strophe.Status.CONNFAIL, "TCP Error");
-}
+};
 
 MockConnection.prototype.disconnect = function(){
     this.status_to_disconnected = [Strophe.Status.DISCONNECTING, Strophe.Status.DISCONNECTED];
@@ -36,7 +36,7 @@ MockConnection.prototype.addHandler = function(func){
     this.handlers.push(func);
 };
 
-MockConnection.prototype.send = function(s){ this.stanza = s};
+MockConnection.prototype.send = function(s){ this.stanza = s; };
 
 /* This is used so we can assert that the handler has been called */
 MockHandler = function(){
@@ -44,15 +44,15 @@ MockHandler = function(){
 };
 MockHandler.prototype.reset = function(s){ 
   this.statuses = {};
-}, 
-MockHandler.prototype.on_stanza = function(s){ this._on_stanza = true;}, 
-MockHandler.prototype.on_status_change = function(stat, err){ this.statuses[stat] = {status: stat, error: err} };
+};
+MockHandler.prototype.on_stanza = function(s){ this._on_stanza = true;};
+MockHandler.prototype.on_status_change = function(stat, err){ this.statuses[stat] = {status: stat, error: err}; };
 
 /* This fakes being the "observer" that Babylon.Observer calls into */
 MockObserver = function(){ this.name = "mock_observer"; };
 
 Screw.Unit(function() {
     before(function() {
-        Strophe.Connection = MockConnection
+        Strophe.Connection = MockConnection;
     });
 });

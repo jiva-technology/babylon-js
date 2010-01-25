@@ -47,12 +47,6 @@ Screw.Unit(function() {
         Babylon.Connection.prototype.stubs("register_cookie_callback");
         runner.set_config(config_clone);
       });
-
-      after(function(){
-        if(Babylon.Connection.prototype.jsmocha){
-          Babylon.Connection.prototype.jsmocha.teardown();
-        }
-      });
       
       it("should set the config", function() {
         runner.connect(jid, "password");

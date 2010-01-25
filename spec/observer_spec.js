@@ -1,13 +1,13 @@
 Screw.Unit(function() {
     describe("Babylon.Observer", function() {
-        var observer = new Object();
-        var obs = new Object();
+        var observer = {};
+        var obs = {};
         var status = "test_status";
 
         before(function(){
             obs = new MockObserver();
             obs["_" + status] = false;
-            obs[status] = function(){ this["_" + status] = true };
+            obs[status] = function(){ this["_" + status] = true; };
             observer = new Babylon.Observer();
             observer.add_connection_observer(status, obs);
         });
@@ -22,7 +22,7 @@ Screw.Unit(function() {
             it("should call func on each observer of a given status", function() {
                 observer.call_on_observers(status, function(obs, stat){
                     obs[stat]();
-                })
+                });
                 expect(obs["_" + status]).to(equal, true);
             });
         });

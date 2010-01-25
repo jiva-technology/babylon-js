@@ -1,11 +1,11 @@
 Screw.Unit(function() {
     describe("Babylon.StatusHandler", function() {
-        var router = new Object();
-        var observer = new Object();
-        var handler = new Object();
+        var router = {};
+        var observer = {};
+        var handler = {};
 
         before(function(){
-            router = new Object();
+            router = {};
             router.routed_stanza = null;
             router.executed_routes = [];
 

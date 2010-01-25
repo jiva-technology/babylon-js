@@ -35,10 +35,6 @@ Screw.Unit(function() {
         Babylon.Connection.prototype.stubs("register_cookie_callback");
         connection.connect(jid, password);
       });
-      
-      after(function(){
-        Babylon.Connection.prototype.jsmocha.teardown();
-      });
 
       it("should set the jid and password", function(){
         expect(connection.jid).to(equal, jid);
@@ -89,13 +85,6 @@ Screw.Unit(function() {
         var mock = new Mock(Babylon.Connection.prototype);
         Babylon.Connection.prototype.stubs("register_cookie_callback");
       });
-      
-      after(function(){
-        if(Babylon.Connection.prototype.jsmocha){
-          Babylon.Connection.prototype.jsmocha.teardown();
-        }
-      });
-      
       
       it("should set the callback to write the cookie on page unload", function(){
         Babylon.Connection.prototype.expects("register_cookie_callback");
@@ -155,12 +144,6 @@ Screw.Unit(function() {
         Babylon.Connection.prototype.stubs("register_cookie_callback");
         connection.connect(jid, password);
         connection.disconnect();
-      });
-
-      after(function(){
-        if(Babylon.Connection.prototype.jsmocha){
-          Babylon.Connection.prototype.jsmocha.teardown();
-        }
       });
 
       it("should set connected to false", function(){

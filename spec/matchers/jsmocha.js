@@ -1,4 +1,4 @@
-Screw.Matchers["verify_to"] = {
+Screw.Matchers.verify_to = {
   match: function(expected, object) {
     if(object.jsmocha.verify() == expected){
       object.jsmocha.teardown();
@@ -10,4 +10,4 @@ Screw.Matchers["verify_to"] = {
   failure_message: function(expected, object, not) {
     return object.jsmocha.report();
   }
-}
+};

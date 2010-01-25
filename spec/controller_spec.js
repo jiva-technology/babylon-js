@@ -1,6 +1,6 @@
 Screw.Unit(function() {
     describe("Babylon.Controller", function() {
-        var controller = new Object();
+        var controller = {};
         var action = "";
         var name = "";
 
@@ -12,7 +12,7 @@ Screw.Unit(function() {
             controller.name = name;
             controller[action] = function(){};
 
-            Babylon.Views.add(name, action, function(){ return "default view"});
+            Babylon.Views.add(name, action, function(){ return "default view"; });
         });
 
         after(function() {
@@ -32,7 +32,7 @@ Screw.Unit(function() {
             });
 
             it("should call the action specified", function() {
-                controller[action] = function(){ this.perform_action_set_var = "xyz" };
+                controller[action] = function(){ this.perform_action_set_var = "xyz"; };
                 controller.perform(action);
                 expect(controller.perform_action_set_var).to(equal, "xyz");
             });
@@ -60,21 +60,21 @@ Screw.Unit(function() {
 
             describe("when {nothing: true} is passed in", function() {
                 it("should set this.view to a callable that returns \"\"", function(){
-                    controller.render({nothing: true})
+                    controller.render({nothing: true});
                     expect(controller.view({})).to(equal, "");
                 });
             });
 
             describe("when {view: xxx} is passed in", function(){
                 it("should set this.view to that function", function() {
-                    expect(controller.render({view: function(l){return "test"}})()).to(equal, "test");
+                    expect(controller.render({view: function(l){return "test"; }})()).to(equal, "test");
                 });
             });
 
             describe("when {action: xxx} is passed in", function(){
                 before(function() {
                     controller["alt-action"] = function(){};
-                    Babylon.Views.add(name, "alt-action", function(){ return "abcd" });
+                    Babylon.Views.add(name, "alt-action", function(){ return "abcd"; });
                 });
 
                 after(function() {
@@ -94,7 +94,7 @@ Screw.Unit(function() {
             });
 
             it("should return the result of calling the view in that scope", function(){
-                controller.view = function(bind){ return bind.bound_var };
+                controller.view = function(bind){ return bind.bound_var; };
                 controller.bound_var = "tada";
                 expect(controller.evaluate()).to(equal, "tada");
             });
