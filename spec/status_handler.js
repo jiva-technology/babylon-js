@@ -44,9 +44,9 @@ Screw.Unit(function() {
 
         describe("on_stanza", function() {
             it("should call router.route passing in the stanza", function() {
-                s = $msg();
+                var s = $msg({to: 'someone', from: 'someone_else'});
                 handler.on_stanza(s);
-                expect(router.routed_stanza).to(equal, s);
+                expect(router.routed_stanza).to(equal, Strophe.serialize(s));
             });
         });
     });

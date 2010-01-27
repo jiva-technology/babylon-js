@@ -5,7 +5,7 @@ Screw.Unit(function() {
         var controller = "test-controller";
         var action = "test-action";
         var query = 'message[from="tutor@hth.com"]';
-        var stanza = $('<div><message type="chat" to="student@hth.com" from="tutor@hth.com"><body>Hi how can I help with algebra?</body></message></div>');
+        var stanza = $.xmlDOM('<message type="chat" to="student@hth.com" from="tutor@hth.com"><body>Hi how can I help with algebra?</body></message>');
 
         before(function(){
             route = new Babylon.Route(query, controller, action);
@@ -28,7 +28,7 @@ Screw.Unit(function() {
 
             describe("when the query does not matche the stanza", function() {
                 before(function(){
-                    stanza = $('<div><message type="chat" to="student@hth.com" from="session_bot@htt.com"><body>I am the session bot!</body></message></div>');
+                    stanza = $.xmlDOM('<message type="chat" to="student@hth.com" from="session_bot@htt.com"><body>I am the session bot!</body></message>');
                 });
                 it("should return false", function(){
                     expect(route.accepts(stanza)).to(equal, false);
