@@ -11,14 +11,15 @@ Screw.Unit(function() {
     var config_clone;
 
     before(function(){
-      router = new Babylon.Router();
-      observer = new Babylon.Observer();
-      runner = new Babylon.Runner(router, observer);
-      
       host = "hth.com";
       jid = "student@hth.com";
       resource = "some_resource";
       config = { "host": host, "resource": resource, "domain": host };
+      
+      router = new Babylon.Router();
+      observer = new Babylon.Observer();
+      runner = new Babylon.Runner(router, observer, config);
+      
       config_clone = jQuery.extend({}, config);
     });
 
