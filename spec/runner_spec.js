@@ -18,7 +18,7 @@ Screw.Unit(function() {
       host = "hth.com";
       jid = "student@hth.com";
       resource = "some_resource";
-      config = { "host": host, "resource": resource };
+      config = { "host": host, "resource": resource, "domain": host };
       config_clone = jQuery.extend({}, config);
     });
 
