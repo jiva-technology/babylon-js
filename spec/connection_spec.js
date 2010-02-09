@@ -1,16 +1,18 @@
 Screw.Unit(function() {
   describe("Babylon.Connection", function() {
     
-    var test_host = "test_host";
+    var host = "test_host";
     var jid = "student@hth.com";
     var password = "password";
+    var resource = "some_resource";
     var connection;
     var test_handler;
     Strophe.Connection = MockConnection;
 
     before(function(){
+      Babylon.config = { "host": host, "resource": resource, "domain": host };
       test_handler = new MockHandler();
-      connection = new Babylon.Connection(test_host, test_handler);
+      connection = new Babylon.Connection(host, test_handler);
     });
     
     after(function(){
@@ -22,7 +24,7 @@ Screw.Unit(function() {
     describe("init", function() {
       it("should set the connected, host, connection, handler", function(){
         expect(connection.connected).to(equal, false);
-        expect(connection.host).to(equal, test_host);
+        expect(connection.host).to(equal, host);
         expect(connection.connection).to_not(equal, null);
         expect(connection.handler).to(equal, test_handler);
       });
