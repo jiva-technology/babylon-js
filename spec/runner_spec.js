@@ -76,8 +76,10 @@ Screw.Unit(function() {
       }); // end it
       
       it("should warm session when no cookie exists", function(){
-        // TODO
-        expect(true).to(equal, false);
+        var mock = new Mock(jQuery);
+        jQuery.expects("post").passing("/session/warm");
+        runner.run();
+        expect(jQuery).to(verify_to, true);
       }); // end it
       
       it("should not call reattach when a cookie does not exists and attach option passed", function(){
