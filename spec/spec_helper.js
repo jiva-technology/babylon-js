@@ -16,6 +16,9 @@ MockConnection.prototype.connect = function(jid, password, on_status_change){
     }
 };
 
+MockConnection.prototype.attach = function(){
+};
+
 MockConnection.prototype.authentication_failed = function(){
     this.on_status_change(Strophe.Status.AUTHFAIL, "Bad password");
 };

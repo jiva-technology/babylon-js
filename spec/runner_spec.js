@@ -4,52 +4,43 @@ Screw.Unit(function() {
     var runner;
     var router;
     var observer;
-    var host;
-    var jid;
-    var config;
-    var resource;
-    var config_clone;
+    
+    var host = "hth.com";
+    var jid = "student@hth.com";
+    var resource = "some_resource";
+    var config = { "host": host, "resource": resource, "domain": host };
+    var config_clone = jQuery.extend({}, config);
 
     before(function(){
-      host = "hth.com";
-      jid = "student@hth.com";
-      resource = "some_resource";
-      config = { "host": host, "resource": resource, "domain": host };
-      
       router = new Babylon.Router();
       observer = new Babylon.Observer();
       runner = new Babylon.Runner(router, observer, config);
-      
-      config_clone = jQuery.extend({}, config);
     });
+
 
     describe("init", function() {
       
       it("should set the observer and router", function() {
         expect(runner.router).to(equal, router);
         expect(runner.observer).to(equal, observer);
-      }); // end it
-    }); // end describe
-    
-    describe("set_config", function() {
-    
-      it("should intialize the connection", function() {
-        runner.set_config(config_clone);
         expect(Babylon.Runner.connection).to_not(be_null);
         expect(Babylon.Runner.connection).to_not(be_undefined);
         expect(Babylon.Runner.connection.host).to(equal, host);
       }); // end it
     }); // end describe
 
+
     describe("connect", function() {
 
       before(function(){
         var mock = new Mock(Babylon.Connection.prototype);
+        var mock = new Mock(Strophe.Connection.prototype);
         Babylon.Connection.prototype.stubs("register_cookie_callback");
         runner.set_config(config_clone);
       });
       
       it("should set the config", function() {
+        console.log("jid: "+jid);
         runner.connect(jid, "password");
         expect(Babylon.config.host).to(equal, host);
         expect(Babylon.config.jid).to(equal, jid);
@@ -58,31 +49,17 @@ Screw.Unit(function() {
       }); // end it
 
       it("should call connect on the connection", function() {
-        Babylon.Connection.prototype.expects("connect").passing(jid + '/' + resource, "password");
+        Strophe.Connection.prototype.expects("connect").passing(jid + '/' + resource, "password");
         runner.connect(jid, "password");
-        expect(Babylon.Connection.prototype).to(verify_to, true);
-      }); // end it
-      
-      it("should not call connect when it can attach to an existing session", function() {
-        var r_mock = new Mock(Babylon.Runner.prototype);
-        Babylon.Runner.prototype.expects("should_reattach").returns(true);
-        Babylon.Connection.prototype.expects("connect").never();
-        runner.connect(jid, "password", true);
-        expect(Babylon.Connection.prototype).to(verify_to, true);
-        expect(Babylon.Runner.prototype).to(verify_to, true);
-      }); // end it
-      
-      it("should connect when it can attach to an existing session but the reattach_check flag not passed", function() {
-        var r_mock = new Mock(Babylon.Runner.prototype);
-        Babylon.Connection.prototype.expects("connect");
-        runner.connect(jid, "password");
-        expect(Babylon.Connection.prototype).to(verify_to, true);
+        expect(Strophe.Connection.prototype).to(verify_to, true);
       }); // end it
     }); // end describe
     
-    describe("run with reattach", function() {
+    
+    describe("run", function() {
       
       it("should call reattach when a cookie exists and attach option passed", function(){
+        // TODO set mock on Strophe not babylone connection for (re)attach
         var mock = new Mock(Babylon.Connection.prototype);
         Babylon.Connection.prototype.expects("read_cookie").returns({jid: "jid", sid: "sid", rid: "rid"});
         Babylon.Connection.prototype.expects("reattach");
@@ -91,13 +68,18 @@ Screw.Unit(function() {
         expect(Babylon.Connection.prototype).to(verify_to, true);
       }); // end it
       
-      it("should not call reattach when a cookie exists but attach option not passed", function(){
+      it("should not call reattach when a cookie exists and attach option is not passed", function(){
         var mock = new Mock(Babylon.Connection.prototype);
-        Babylon.Connection.prototype.expects("read_cookie").returns({jid: "jid", sid: "sid", rid: "rid"});
-        Babylon.Connection.prototype.expects("reattach").never();
-        runner.set_config({"host": "hth.com", "jid": "student@hth.com"});
+        Babylon.Connection.prototype.expects("read_cookie");
         runner.run();
         expect(Babylon.Connection.prototype).to(verify_to, true);
+      }); // end it
+      
+      it("should warm session when no cookie exists", function(){
+        var mock = new Mock(jQuery);
+        jQuery.expects("post").passing("/session/warm");
+        runner.run();
+        expect(jQuery).to(verify_to, true);
       }); // end it
       
       it("should not call reattach when a cookie does not exists and attach option passed", function(){
@@ -114,7 +96,7 @@ Screw.Unit(function() {
         var mock = new Mock(Strophe.Connection.prototype);
         
         Babylon.Connection.prototype.stubs("register_cookie_callback");
-        Babylon.Connection.prototype.expects("read_cookie").twice().returns({jid: "123", sid: "456", rid: "789"});
+        Babylon.Connection.prototype.expects("read_cookie").returns({jid: "123", sid: "456", rid: "789"});
         Strophe.Connection.prototype.expects("attach").passing(function(args){
           return args[0] == "123" && args[1] == "456" && args[2] == "789" ? true : false;
         });
@@ -124,28 +106,6 @@ Screw.Unit(function() {
         
         expect(Babylon.Connection.prototype).to(verify_to, true);
         expect(Strophe.Connection.prototype).to(verify_to, true);
-      }); // end it
-    }); // end describe
-    
-    
-    describe("set_credentials", function() {
-    
-      before(function(){
-        runner.set_config(config_clone);
-      });
-    
-      it("should set the jid and full_jid but not the password", function() {
-        runner.set_credentials(jid);
-        expect(Babylon.config.password).to(be_undefined);
-        expect(Babylon.config.jid).to(equal, jid);
-        expect(Babylon.config.full_jid).to(equal, jid + '/' + resource);
-      }); // end it
-      
-      it("should set the jid and full_jid and password", function() {
-        runner.set_credentials(jid, "password");
-        expect(Babylon.config.jid).to(equal, jid);
-        expect(Babylon.config.full_jid).to(equal, jid + '/' + resource);
-        expect(Babylon.config.password).to(equal, "password");
       }); // end it
     }); // end describe
   }); // end describe
