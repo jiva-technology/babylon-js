@@ -6,17 +6,35 @@ Screw.Unit(function() {
     var password = "password";
     var resource = "some_resource";
     var connection;
-    var test_handler;
-    Strophe.Connection = MockConnection;
+    var mock_handler;
+    var mock_connection;
+    // Strophe.Connection = MockConnection;
 
     before(function(){
       Babylon.config = { "host": host, "resource": resource, "domain": host };
-      test_handler = new MockHandler();
-      connection = new Babylon.Connection(host, test_handler);
+      
+      // mock strophes connection class
+      mock_connection = new Mock();
+      // mock_connection.stubs('connect').runs(sucessful_connection_callbacks);
+      mock_connection.stubs('attach');
+      mock_connection.stubs('reset');
+      mock_connection.stubs('authentication_failed');
+      mock_connection.stubs('connection_failed');
+      mock_connection.stubs('disconnect');
+      mock_connection.stubs('addHandler');
+      mock_connection.stubs('send');
+      
+      var strophe_mock = new Mock(Strophe);
+      Strophe.stubs('Connection').returns(mock_connection);
+      
+      // Strophe.Connection = mock_connection;
+      
+      mock_handler = new MockHandler();
+      connection = new Babylon.Connection(host, mock_handler);
     });
     
     after(function(){
-      test_handler.reset();
+      mock_handler.reset();
       $.cookie('babylon', null);
     });
 
@@ -25,8 +43,8 @@ Screw.Unit(function() {
       it("should set the connected, host, connection, handler", function(){
         expect(connection.connected).to(equal, false);
         expect(connection.host).to(equal, host);
-        expect(connection.connection).to_not(equal, null);
-        expect(connection.handler).to(equal, test_handler);
+        expect(connection.connection).to(equal, mock_connection);
+        expect(connection.handler).to(equal, mock_handler);
       });
     });
 
@@ -35,37 +53,38 @@ Screw.Unit(function() {
       before(function(){
         var mock = new Mock(Babylon.Connection.prototype);
         Babylon.Connection.prototype.stubs("register_cookie_callback");
+        mock_connection.expects('connect').passing(jid, password. Match.a_function); //.runs(sucessful_connection_callbacks);
         connection.connect(jid, password);
       });
 
-      it("should set the jid and password", function(){
-        expect(connection.jid).to(equal, jid);
-        expect(connection.password).to(equal, password);
+      it("should set the Babylon.config credentials", function(){
+        expect(Babylon.config.jid).to(equal, jid);
+        expect(Babylon.config.password).to(equal, password);
       }); 
 
       it("should trigger connecting callback", function(){
-        expect(test_handler.statuses.connecting).to(equal, {status: "connecting"}); 
+        expect(mock_handler.statuses.connecting).to(equal, {status: "connecting"}); 
       });
 
       it("should trigger connected callback", function(){
-        expect(test_handler.statuses.connected).to(equal, {status: "connected"}); 
+        expect(mock_handler.statuses.connected).to(equal, {status: "connected"}); 
       });
 
       it("should trigger authenticating callback", function(){
-        expect(test_handler.statuses.authenticating).to(equal, {status: "authenticating"}); 
+        expect(mock_handler.statuses.authenticating).to(equal, {status: "authenticating"}); 
       });
 
       describe("when connection fails", function(){
         it("should trigger connection_failed callback", function(){
           connection.connection.connection_failed();
-          expect(test_handler.statuses.connection_failed).to(equal, {status: "connection_failed", error: "TCP Error"}); 
+          expect(mock_handler.statuses.connection_failed).to(equal, {status: "connection_failed", error: "TCP Error"}); 
         });
       });
 
       describe("when authentication fails", function(){
         it("should trigger authentication_failed callback", function(){
           connection.connection.authentication_failed();
-          expect(test_handler.statuses.authentication_failed).to(equal, {status: "authentication_failed", error: "Bad password"}); 
+          expect(mock_handler.statuses.authentication_failed).to(equal, {status: "authentication_failed", error: "Bad password"}); 
         });
       });
 
@@ -171,12 +190,35 @@ Screw.Unit(function() {
 
 
       it("should trigger the disconnecting callback", function(){
-         expect(test_handler.statuses.disconnecting).to(equal, {status: "disconnecting"}); 
+         expect(mock_handler.statuses.disconnecting).to(equal, {status: "disconnecting"}); 
       });
 
       it("should trigger the disconnected callback", function(){
-         expect(test_handler.statuses.disconnected).to(equal, {status: "disconnected"}); 
+         expect(mock_handler.statuses.disconnected).to(equal, {status: "disconnected"}); 
       });
-    });
+    }); // end describe
+    
+    describe("set_credentials", function() {
+      
+      it("should set the credentials", function() {
+        connection.set_credentials('barry@some_domain.com', 'hello');
+        expect(Babylon.config.jid).to(equal, 'barry@some_domain.com');
+        expect(Babylon.config.full_jid).to(equal, 'barry@some_domain.com/some_resource');
+        expect(Babylon.config.password).to(equal, 'hello');
+      }); // end it
+      
+      it("should override the previously set resource", function() {
+        connection.set_credentials('barry@some_domain.com/new_resource');
+        expect(Babylon.config.resource).to(equal, 'new_resource');
+        expect(Babylon.config.full_jid).to(equal, 'barry@some_domain.com/new_resource');
+      }); // end it
+      
+      it("should not add a resource where this isn't one", function() {
+        delete Babylon.config.resource;
+        connection.set_credentials('barry@some_domain.com');
+        expect(Babylon.config.resource).to(be_undefined);
+        expect(Babylon.config.full_jid).to(equal, 'barry@some_domain.com');
+      }); // end it
+    }); // end describe
   });
 });

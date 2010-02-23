@@ -1,5 +1,4 @@
 var jsMocha = {};
-
 jsMocha.Cardinality = new function() {
     function Cardinality(required, maximum) {
         this.required = required;
@@ -58,16 +57,25 @@ jsMocha.Cardinality = new function() {
 };
 jsMocha.Expectation = function(mock, method_name) {
 	this.mock = mock;
-	this.mock_name = this.get_name(mock);
+	var obj = this.existing_expecation(method_name);
+  if(obj){
+    console.log("ARRRRRG, trying you mock twice you be!");
+    obj.has_existing_expectation = true;
+    obj.once();
+    return obj;
+  }
+  else{
+    this.has_existing_expectation = false;
+    this.once();
+  }
 	this.method_name = method_name;
 	this.actual_parameters = null;
-	this.replace_method(mock, method_name);
-  this.cardinality = jsMocha.Cardinality.exactly(1);
 	this.invocation_count = 0;
 	this.local_report = [];
 	this.return_values = null;
 	this.valid = true;
-}
+	this.callback = null;
+};
 
 jsMocha.Expectation.prototype = {
 
@@ -76,7 +84,12 @@ jsMocha.Expectation.prototype = {
 		return this;
 	},
 	once: function() {
-		this.cardinality = jsMocha.Cardinality.exactly(1);
+	  if(this.has_existing_expectation){
+	    this.cardinality = jsMocha.Cardinality.exactly(this.cardinality.maximum + 1);
+	  }
+	  else{
+	    this.cardinality = jsMocha.Cardinality.exactly(1);
+	  }
 		return this;
 	},
 	twice: function() {
@@ -103,16 +116,37 @@ jsMocha.Expectation.prototype = {
 		this.return_values = arguments;
 		return this;
 	},
-	replace_method: function(mock, method_name) {
-		this.original_method = mock[method_name];
-		var self = this;
-		mock[method_name] = function(){
-			self.invocation_count += 1;
-			if(self.parameters_matcher){
-				self.parameters_matcher.match(arguments);
-			}
-			if(self.return_values){ return self.next_return_value(); }
-		};
+	runs: function(callback) {
+	  this.callback = callback;
+		return this;
+	},
+	should_return_something: function() {
+	  return this.return_values ? true : false;
+	},
+	existing_expecation: function(method_name) {
+	  if(this.mock.jsmocha){
+    	var len = this.mock.jsmocha.expectations.expectations.length;
+    	for(var i = 0; i < len; i++){
+    	  if(this.mock.jsmocha.expectations.expectations[i].method_name == method_name){
+    	    return this.mock.jsmocha.expectations.expectations[i];
+    	  }
+    	}
+  	}
+	},
+	match: function(args) {
+	  if(this.parameters_matcher){
+	    if(this.parameters_matcher.match(args)){
+	      this.invocation_count += 1;
+  	    return true;
+	    }
+	    else{
+	      return false;
+	    }
+	  }
+	  else{
+	    this.invocation_count += 1;
+	    return true;
+	  }
 	},
 	next_return_value: function() {
 	  var return_vals_length = this.return_values.length;
@@ -129,18 +163,22 @@ jsMocha.Expectation.prototype = {
       }
 	  }
 	},
+	run_callback: function() {
+	  if(this.callback){
+	    this.callback();
+    }
+	},
 	verify: function(){
 		this.valid = true;
 		this.local_report = [];
-		this.add_report("object: "+this.mock_name+'.'+this.method_name);
 
     if(this.cardinality.verify(this.invocation_count)){
       this.set_valid(true);
-			this.add_report('PASS '+this.cardinality.inspect()+' invoked '+this.cardinality.times(this.invocation_count));
+			this.add_report('PASS '+this.cardinality.inspect() + this.expected_params_report() + ' invoked '+this.cardinality.times(this.invocation_count));
 		}
 		else{
 			this.set_valid(false);
-			this.add_report('FAIL wrong number of invocations, '+this.cardinality.inspect()+' invoked '+this.cardinality.times(this.invocation_count));
+			this.add_report('FAIL wrong number of invocations, '+this.cardinality.inspect() + this.expected_params_report() + ' invoked '+this.cardinality.times(this.invocation_count));
 		}
 
 		if(this.parameters_matcher){
@@ -155,6 +193,14 @@ jsMocha.Expectation.prototype = {
 		}
 		return(this.is_valid());
 	},
+	expected_params_report: function() {
+	  if(this.parameters_matcher){
+	    return ' with(' + this.parameters_matcher.list_parameters(this.parameters_matcher.expected_parameters) + ')';
+    }
+    else{
+      return '';
+    }
+	},
 	set_valid: function(valid) {
 		if(this.valid !== false){
 			this.valid = valid;
@@ -168,35 +214,65 @@ jsMocha.Expectation.prototype = {
 	},
 	add_report: function(report){
 		this.local_report.push(report);
-	},
-	restore: function(){
-		this.mock[this.method_name] = this.original_method;
-	},
-	get_name: function(mock) {
-	   var funcNameRegex = /function (.{1,})\(/;
-	   var results = (funcNameRegex).exec((mock).constructor.toString());
-	   return (results && results.length > 1) ? results[1] : "";
 	}
 };
 jsMocha.ExpectationList = function() {
-	this.expectations = [];
-}
+	this.expectations = {};
+};
 
 jsMocha.ExpectationList.prototype = {
 
-	add: function(expectation){
-		this.expectations.push(expectation);
+	add: function(mock, method_name){
+	  var expectation = new jsMocha.Expectation(mock, method_name);
+	  var local_expectation = this.find_or_create(method_name);
+	  local_expectation.expectations.push(expectation);
+	  this.store_mocked_object(local_expectation, mock);
+    this.replace_method(mock, method_name, local_expectation);
 		return expectation;
 	},
+	find_or_create: function(name){
+	  if(!this.expectations[name]){
+	    this.expectations[name] = { expectations: [], obj: null, original_method: null, invocation_count: 0 };
+	  }
+	  return this.expectations[name];
+	},
+	store_mocked_object: function(expectation, obj) {
+	  if(expectation.obj === null){
+	    expectation.obj = obj;
+	  }
+	},
+	replace_method: function(mock, method_name, expectation) {
+   expectation.original_method = mock[method_name];
+   mock[method_name] = function(){
+     console.log("JSMOCHA INFO: method invoked with the parameters:");
+     console.log(arguments);
+     expectation.invocation_count += 1;
+     var len = expectation.expectations.length;
+     for(var i = 0; i < len; i++){
+       if(expectation.expectations[i].match(arguments)){
+         if(expectation.expectations[i].should_return_something()){ return expectation.expectations[i].next_return_value(); }
+         expectation.expectations[i].run_callback();
+         break; // parameter match was found, stop execution of loop
+       }
+     }
+   };
+  },
 	verify_all: function(){
 		var results = [];
-		for(var i = 0; i < this.expectations.length; i++){
-			results.push(this.expectations[i].verify());
+		for(var key in this.expectations){
+		  if (this.expectations.hasOwnProperty(key)) {
+		    console.log("total invocations: "+this.expectations[key].invocation_count);
+  		  var len = this.expectations[key].expectations.length;
+    		for(var i = 0; i < len; i++){
+    			results.push(this.expectations[key].expectations[i].verify());
+    		}
+  		}
 		}
 		return this.all_passed(results);
 	},
 	all_passed: function(array){
-		for(var i=0; i < array.length; i++){
+	  var len = array.length;
+		for(var i=0; i < len; i++){
 			if(array[i] === false){
 				return false;
 			}
@@ -205,43 +281,183 @@ jsMocha.ExpectationList.prototype = {
 	},
 	reports: function(){
 		var results = [];
-		for(var i = 0; i < this.expectations.length; i++){
-			results.push(this.expectations[i].report());
+		for(var key in this.expectations){
+		  if (this.expectations.hasOwnProperty(key)) {
+		    results.push("object: " + this.get_name(this.expectations[key].obj) + '.' + key);
+		    results.push("INFO called " + this.expectations[key].invocation_count + " time(s)");
+  		  var len = this.expectations[key].expectations.length;
+    		for(var i = 0; i < len; i++){
+    			results.push(this.expectations[key].expectations[i].report());
+    		}
+  		}
 		}
 		return "\r\n"+results.join("\r\n");
 	},
 	restore_all: function(){
-		for(var i = 0; i < this.expectations.length; i++){
-			this.expectations[i].restore();
+	  for(var key in this.expectations){
+		  if (this.expectations.hasOwnProperty(key)) {
+		    this.restore(key, this.expectations[key]);
+  		}
 		}
+	},
+  restore: function(method_name, expectation){
+    expectation.obj[method_name] = expectation.original_method;
+  },
+  get_name: function(mock) {
+	   var funcNameRegex = /function (.{1,})\(/;
+	   var results = (funcNameRegex).exec((mock).constructor.toString());
+	   return (results && results.length > 1) ? results[1] : "";
 	}
 };
-Mock = function(object) {
+var Match = {
 
-	mock = object || {};
+  is_a_method_of: function(method){
+    for(meth in Match){
+      if(method === Match[meth]){
+        return true;
+      }
+    }
+  },
 
+  a_string: function(o){
+    return typeof o === Match.STRING;
+  },
+
+  an_array: function(o) {
+    return Match.type(o) === Match.ARRAY;
+  },
+
+  a_boolean: function(o) {
+    return typeof o === Match.BOOLEAN;
+  },
+
+  a_function: function(o) {
+    return Match.type(o) === Match.FUNCTION;
+  },
+
+  a_date: function(o) {
+    return Match.type(o) === Match.DATE;
+  },
+
+  is_null: function(o) {
+    return o === null;
+  },
+
+  a_number: function(o) {
+    return typeof o === Match.NUMBER && isFinite(o);
+  },
+
+  an_object: function(o, failfn) {
+    return (o && (typeof o === Match.OBJECT || (!failfn && Match.a_function(o)))) || false;
+  },
+
+  is_undefined: function(o) {
+    return typeof o === Match.UNDEFINED;
+  },
+
+  type: function(o) {
+    console.warn();
+    console.warn(Match.TYPES[typeof o]);
+    console.warn(Match.TYPES[Match.TOSTRING.call(o)]);
+    return Match.TYPES[typeof o] || Match.TYPES[Match.TOSTRING.call(o)] || (o ? Match.OBJECT : Match.NULL);
+  }
+};
+
+Match.ARRAY     = 'array';
+Match.BOOLEAN   = 'boolean';
+Match.DATE      = 'date';
+Match.ERROR     = 'error';
+Match.FUNCTION  = 'function';
+Match.NUMBER    = 'number';
+Match.NULL      = 'null';
+Match.OBJECT    = 'object';
+Match.REGEX     = 'regexp';
+Match.STRING    = 'string';
+Match.TOSTRING  = Object.prototype.toString;
+Match.UNDEFINED = 'undefined';
+
+Match.TYPES = {
+  'undefined'         : Match.UNDEFINED,
+  'number'            : Match.NUMBER,
+  'boolean'           : Match.BOOLEAN,
+  'string'              : Match.STRING,
+  '[object Function]' : Match.FUNCTION,
+  '[object RegExp]'   : Match.REGEX,
+  '[object Array]'    : Match.ARRAY,
+  '[object Date]'     : Match.DATE,
+  '[object Error]'    : Match.ERROR
+};
+Mock = function(object, force) {
+	var mock = object || {};
 	if(this.already_mocked(mock)){
 		return mock;
 	}
-
 	this.expectations = new jsMocha.ExpectationList();
-
-	if(this.check_for_clashes(mock)){
+	if(this.check_for_clashes(mock) && !force){
 		throw new Error("Cannot mock object, function names clash!!");
 	}
-	if( typeof(mock) == 'function' ) {
-	  this.add_methods_to_object(mock);
-    // throw new Error("Cannot mock something of type: " + typeof(mock));
-	}
-	else if( typeof(mock) == 'object') {
+	var type = typeof(mock);
+	var type2 = Object.prototype.toString.call(object);
+	if((type === 'function' || type === 'object') && (type2 !== '[object Date]' && type2 !== '[object Array]')) {
 		this.add_methods_to_object(mock);
-	}
-	else {
+	} else {
 		throw new Error("Cannot mock something of type: " + typeof(mock));
 	}
 	this.mock = mock;
+	Mock.mocked_objects.push(mock);
 	return mock;
-}
+};
+
+Mock.mocked_objects = [];
+
+Mock.mockerize = function(){
+  Object.prototype.expects = function(method_name){
+    if(Mock.is_real_call(arguments)){ return Mock.mock_from_expects(this, method_name); }
+  };
+  Function.prototype.expects = function(method_name){
+    if(Mock.is_real_call(arguments)){ return Mock.mock_from_expects(this, method_name); }
+  };
+  Object.prototype.stubs = function(method_name){
+    if(Mock.is_real_call(arguments)){ return Mock.mock_from_stubs(this, method_name); }
+  };
+  Function.prototype.stubs = function(method_name){
+    if(Mock.is_real_call(arguments)){ return Mock.mock_from_stubs(this, method_name); }
+  };
+};
+
+Mock.is_real_call = function(args){
+  return args.length == 1 && typeof(args[0]) == 'string';
+};
+
+Mock.mock_from_expects = function(obj, method_name){
+  var m = new Mock(obj, true);
+  return obj.expects(method_name);
+};
+
+Mock.mock_from_stubs = function(obj, method_name){
+  var m = new Mock(obj, true);
+  return obj.stubs(method_name);
+};
+
+Mock.teardown_all = function(){
+  var l = Mock.mocked_objects.length;
+  for(var i = 0; i < l; i++){
+    if(typeof Mock.mocked_objects[i].jsmocha !== 'undefined'){
+      Mock.mocked_objects[i].jsmocha.teardown(true);
+    }
+  }
+  Mock.mocked_objects = [];
+};
+
+Mock.remove_from_mocked_objects = function(obj){
+  var l = Mock.mocked_objects.length;
+  for(var i = 0; i < l; i++){
+    if(Mock.mocked_objects[i] === obj){
+      Mock.mocked_objects.splice(i,1);
+      return;
+    }
+  }
+};
 
 Mock.prototype = {
 	reservedNames: ['expects', 'stubs', 'jsmocha'],
@@ -257,7 +473,8 @@ Mock.prototype = {
 		}
 	},
 	in_array: function(subject, array){
-  	for(var i = 0; i < array.length; i++){
+	  var len = array.length;
+  	for(var i = 0; i < len; i++){
   		if(subject == array[i]){
   			return true;
 			}
@@ -267,15 +484,12 @@ Mock.prototype = {
 	add_methods_to_object: function(object, stub) {
 		object.jsmocha = this;
 	  object.stubs = function(method_name){
-			var expectation = new jsMocha.Expectation(this, method_name);
-			expectation.at_least(0);
-			this.jsmocha.expectations.add(expectation);
-			return expectation;
+      var expectation = this.jsmocha.expectations.add(this, method_name);
+      expectation.at_least(0);
+      return expectation;
 		};
 		object.expects = function(method_name){
-			var expectation = new jsMocha.Expectation(this, method_name);
-			this.jsmocha.expectations.add(expectation);
-			return expectation;
+			return this.jsmocha.expectations.add(this, method_name);
 		};
 	},
 	verify: function(){
@@ -284,10 +498,11 @@ Mock.prototype = {
 	},
 	report: function(){
 		var reports = this.expectations.reports();
-		this.teardown(mock);
+		this.teardown();
 		return reports;
 	},
-	teardown: function(){
+	teardown: function(skip_remove){
+	  if(!skip_remove){ Mock.remove_from_mocked_objects(this.mock); }
 		this.expectations.restore_all();
 		delete this.mock.expects;
 		delete this.mock.stubs;
@@ -297,33 +512,83 @@ Mock.prototype = {
 jsMocha.ParametersMatcher = function(expected_parameters) {
 	this.expected_parameters = expected_parameters;
 	this.serialize_stack_limit = 4;
-	this.valid = false;
+	this.invocations = [];
 };
 
 jsMocha.ParametersMatcher.prototype = {
 
+	valid: function() {
+	  var len = this.invocations.length;
+	  if(len < 1){
+	    return false;
+    }
+	  for(var i = 0; i < len; i++){
+	    if(this.invocations[i] === false){
+	      return false;
+	    }
+    }
+    return true;
+	},
 	match: function(actual_parameters) {
 	  this.actual_parameters = actual_parameters;
 		if(this.block_given()){
-		  this.valid = this.block(actual_parameters);
-		  return this.valid;
+		  var match = this.block(actual_parameters);
+		  if(match){
+		    this.invocations.push(true);
+		    return true;
+		  }
+		  else{
+		    return false;
+		  }
 		}
 		else{
       return this.parameters_match(actual_parameters);
     }
   },
 	parameters_match: function(actual_parameters) {
-		for(var i = 0; i < this.expected_parameters.length; i++){
-			if(actual_parameters[i] != this.expected_parameters[i]){
-				this.valid = false;
+	  var len = this.expected_parameters.length;
+		for(var i = 0; i <= len; i++){
+      if(Match.is_a_method_of(this.expected_parameters[i])){
+        console.warn("not running regular matcher");
+        if(!this.expected_parameters[i](actual_parameters[i])){
+          return false;
+        }
+			}else if(!this.equal(this.expected_parameters[i], actual_parameters[i])){
 				return false;
 			}
 		}
-		this.valid = true;
+    this.invocations.push(true);
 		return true;
 	},
+	equal: function(expected, actual) {
+	  console.warn("running regular matcher");
+    if(expected instanceof Array) {
+      for(var i = 0; i < actual.length; i++) {
+        if(!this.equal(expected[i], actual[i])){ return false; }
+      }
+      return actual.length == expected.length;
+    } else if (expected instanceof Object) {
+      for (var key in expected){
+        if(actual[key]){
+          if(!this.equal(expected[key], actual[key])){ return false; }
+        }else{
+          return false;
+        }
+      }
+      for (var key in actual){
+        if(expected[key]){
+          if(!this.equal(expected[key], actual[key])){ return false; }
+        }else{
+          return false;
+        }
+      }
+      return true;
+    }else{
+      return expected == actual;
+    }
+  },
 	block_given: function() {
-	  if(this.expected_parameters.length == 1 && this.is_function(this.expected_parameters[0])){
+	  if(this.expected_parameters.length == 1 && this.is_function(this.expected_parameters[0]) && !Match.is_a_method_of(this.expected_parameters[0])){
 	    this.block = this.expected_parameters[0];
 	    return true;
 	  }
@@ -335,7 +600,7 @@ jsMocha.ParametersMatcher.prototype = {
 	  return typeof o == 'function' || Object.prototype.toString.call(o) == '[object Function]' ? true : false;
 	},
 	report: function() {
-		if(this.valid) {
+		if(this.valid() || this.invocations.length < 1) {
 			return true;
 		}
 		else{
@@ -356,7 +621,8 @@ jsMocha.ParametersMatcher.prototype = {
 	list_parameters: function(parameters) {
     if(parameters){
          var a = [];
-         for(var i=0; i<parameters.length; i++){
+         var len = parameters.length;
+         for(var i = 0; i < len; i++){
            a.push(this.serialize(parameters[i], 0));
          }
          return a.join(', ');
@@ -385,7 +651,8 @@ jsMocha.ParametersMatcher.prototype = {
         else{
           var a = [];
           if (obj.constructor === Array || typeof obj.callee !== 'undefined'){
-            for(var i = 0; i < obj.length-1; i++) { a.push(this.serialize(obj[i], (recursion_level+1))); }
+            var len = obj.length - 1;
+            for(var i = 0; i < len; i++) { a.push(this.serialize(obj[i], (recursion_level+1))); }
             a.push(this.serialize(obj[i], (recursion_level+1)));
             str = '[' + a.join(', ') + ']';
           }

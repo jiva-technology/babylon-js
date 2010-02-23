@@ -16,6 +16,14 @@ MockConnection.prototype.connect = function(jid, password, on_status_change){
     }
 };
 
+var sucessful_connection_callbacks = function(){
+  var status_to_connected = [Strophe.Status.CONNECTING, Strophe.Status.CONNECTED, Strophe.Status.AUTHENTICATING];
+
+  for(var i = 0; i < status_to_connected.length; i++) {
+      this.on_status_change(this.status_to_connected[i]);
+  }
+};
+
 MockConnection.prototype.attach = function(){
 };
 
@@ -51,11 +59,19 @@ MockHandler.prototype.reset = function(s){
 MockHandler.prototype.on_stanza = function(s){ this._on_stanza = true;};
 MockHandler.prototype.on_status_change = function(stat, err){ this.statuses[stat] = {status: stat, error: err}; };
 
+
+
 /* This fakes being the "observer" that Babylon.Observer calls into */
 MockObserver = function(){ this.name = "mock_observer"; };
 
 Screw.Unit(function() {
-    before(function() {
-        Strophe.Connection = MockConnection;
+  before(function() {
+    Strophe.Connection = MockConnection;
+  });
+    
+  after(function(){
+    $(Mock.mocked_objects).each(function(i, obj){
+      expect(obj).to(verify_to, true);
     });
+  });
 });

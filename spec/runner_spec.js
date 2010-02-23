@@ -49,7 +49,7 @@ Screw.Unit(function() {
       }); // end it
 
       it("should call connect on the connection", function() {
-        Strophe.Connection.prototype.expects("connect").passing(jid + '/' + resource, "password");
+        Strophe.Connection.prototype.expects("connect").passing(jid + '/' + resource, "password", MochaMatcher.method);
         runner.connect(jid, "password");
         expect(Strophe.Connection.prototype).to(verify_to, true);
       }); // end it
@@ -77,7 +77,7 @@ Screw.Unit(function() {
       
       it("should warm session when no cookie exists", function(){
         var mock = new Mock(jQuery);
-        jQuery.expects("post").passing("/session/warm");
+        jQuery.expects("post").passing("/session/warm.json");
         runner.run();
         expect(jQuery).to(verify_to, true);
       }); // end it
