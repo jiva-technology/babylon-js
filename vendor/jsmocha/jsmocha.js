@@ -75,6 +75,7 @@ jsMocha.Expectation = function(mock, method_name) {
 	this.return_values = null;
 	this.valid = true;
 	this.callback = null;
+	this.callback_arguments = [];
 };
 
 jsMocha.Expectation.prototype = {
@@ -120,6 +121,10 @@ jsMocha.Expectation.prototype = {
 	  this.callback = callback;
 		return this;
 	},
+	invokes_arguments: function() {
+	  this.callback_arguments = arguments;
+		return this;
+	},
 	should_return_something: function() {
 	  return this.return_values ? true : false;
 	},
@@ -163,9 +168,13 @@ jsMocha.Expectation.prototype = {
       }
 	  }
 	},
-	run_callback: function() {
+	run_callbacks: function(args) {
 	  if(this.callback){
 	    this.callback();
+    }
+    var len = this.callback_arguments.length;
+    for(var i=0; i<len; i++){
+      args[this.callback_arguments[i]]();
     }
 	},
 	verify: function(){
@@ -222,12 +231,12 @@ jsMocha.ExpectationList = function() {
 
 jsMocha.ExpectationList.prototype = {
 
-	add: function(mock, method_name){
+	add: function(mock, method_name, spy){
 	  var expectation = new jsMocha.Expectation(mock, method_name);
 	  var local_expectation = this.find_or_create(method_name);
 	  local_expectation.expectations.push(expectation);
 	  this.store_mocked_object(local_expectation, mock);
-    this.replace_method(mock, method_name, local_expectation);
+    this.replace_method(mock, method_name, local_expectation, spy);
 		return expectation;
 	},
 	find_or_create: function(name){
@@ -241,7 +250,7 @@ jsMocha.ExpectationList.prototype = {
 	    expectation.obj = obj;
 	  }
 	},
-	replace_method: function(mock, method_name, expectation) {
+	replace_method: function(mock, method_name, expectation, spy) {
    expectation.original_method = mock[method_name];
    mock[method_name] = function(){
      console.log("JSMOCHA INFO: method invoked with the parameters:");
@@ -251,9 +260,12 @@ jsMocha.ExpectationList.prototype = {
      for(var i = 0; i < len; i++){
        if(expectation.expectations[i].match(arguments)){
          if(expectation.expectations[i].should_return_something()){ return expectation.expectations[i].next_return_value(); }
-         expectation.expectations[i].run_callback();
+         expectation.expectations[i].run_callbacks(arguments);
          break; // parameter match was found, stop execution of loop
        }
+     }
+     if(spy){
+       expectation.original_method.apply(mock, arguments);
      }
    };
   },
@@ -423,6 +435,12 @@ Mock.mockerize = function(){
   Function.prototype.stubs = function(method_name){
     if(Mock.is_real_call(arguments)){ return Mock.mock_from_stubs(this, method_name); }
   };
+  Object.prototype.spies = function(method_name){
+    if(Mock.is_real_call(arguments)){ return Mock.mock_from_spies(this, method_name); }
+  };
+  Function.prototype.spies = function(method_name){
+    if(Mock.is_real_call(arguments)){ return Mock.mock_from_spies(this, method_name); }
+  };
 };
 
 Mock.is_real_call = function(args){
@@ -437,6 +455,11 @@ Mock.mock_from_expects = function(obj, method_name){
 Mock.mock_from_stubs = function(obj, method_name){
   var m = new Mock(obj, true);
   return obj.stubs(method_name);
+};
+
+Mock.mock_from_spies = function(obj, method_name){
+  var m = new Mock(obj, true);
+  return obj.spies(method_name);
 };
 
 Mock.teardown_all = function(){
@@ -460,7 +483,7 @@ Mock.remove_from_mocked_objects = function(obj){
 };
 
 Mock.prototype = {
-	reservedNames: ['expects', 'stubs', 'jsmocha'],
+	reservedNames: ['expects', 'stubs', 'spies', 'jsmocha'],
 
 	already_mocked: function(object) {
 		return object.jsmocha ? true : false;
@@ -482,15 +505,18 @@ Mock.prototype = {
   	return false;
 	},
 	add_methods_to_object: function(object, stub) {
-		object.jsmocha = this;
-	  object.stubs = function(method_name){
+    object.jsmocha = this;
+    object.stubs = function(method_name){
       var expectation = this.jsmocha.expectations.add(this, method_name);
       expectation.at_least(0);
       return expectation;
-		};
-		object.expects = function(method_name){
-			return this.jsmocha.expectations.add(this, method_name);
-		};
+    };
+    object.expects = function(method_name){
+      return this.jsmocha.expectations.add(this, method_name);
+    };
+    object.spies = function(method_name){
+      return this.jsmocha.expectations.add(this, method_name, true);
+    };
 	},
 	verify: function(){
 		var result = this.expectations.verify_all();
@@ -506,6 +532,7 @@ Mock.prototype = {
 		this.expectations.restore_all();
 		delete this.mock.expects;
 		delete this.mock.stubs;
+		delete this.mock.spies;
 		delete this.mock.jsmocha;
 	}
 };
