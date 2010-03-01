@@ -81,6 +81,14 @@ Screw.Unit(function() {
         expect(Babylon.config.full_jid()).to(equal, 'tom@penny.com/miniramp');
       }); // end it
       
+      it("should be able to set the jid without a resource", function() {
+        Babylon.config.set({ 'jid': 'tom@penny.com' });
+        expect(Babylon.config.bare_jid()).to(equal, 'tom@penny.com');
+        expect(Babylon.config.domain()).to(equal, 'penny.com');
+        expect(Babylon.config.resource()).to(equal, null);
+        expect(Babylon.config.full_jid()).to(equal, 'tom@penny.com');
+      }); // end it
+      
       it("should be able to set the session_bot", function() {
         Babylon.config.set({ 'jid': 'tom@penny.com/miniramp' });
         Babylon.config.set({ 'session_bot': 'session@rabbitmq' });
