@@ -3,7 +3,7 @@ Chatter.Roster.prototype = new Babylon.();
 Chatter.Roster.prototype.name = "roster";
 
 Chatter.Roster.prototype.on_connected = function() {
-  this.from = Babylon.config["jid"];
+  this.from = Babylon.config.full_jid();
 };
 
 Chatter.Roster.prototype.roster = function() {

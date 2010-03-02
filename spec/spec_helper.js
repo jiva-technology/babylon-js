@@ -59,13 +59,17 @@ MockHandler.prototype.reset = function(s){
 MockHandler.prototype.on_stanza = function(s){ this._on_stanza = true;};
 MockHandler.prototype.on_status_change = function(stat, err){ this.statuses[stat] = {status: stat, error: err}; };
 
-
-
 /* This fakes being the "observer" that Babylon.Observer calls into */
 MockObserver = function(){ this.name = "mock_observer"; };
 
+
+var current_http_bind_host = window.location.protocol + '//' + window.location.host + "/http-bind/";
+
 Screw.Unit(function() {
   before(function() {
+    // chrome throws errors when trying to access cookies running from a file
+    var cookie_mock = new Mock(Babylon.config);
+    Babylon.config.stubs('save');
     Strophe.Connection = MockConnection;
   });
     
