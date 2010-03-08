@@ -1,0 +1,37 @@
+#  Return an array of filepaths relative to src_dir to include before jasmine specs.
+src_files:
+ - vendor/jsmocha/jsmocha.js
+ - vendor/webmooch/mooch.js
+ - vendor/jquery/jquery.js
+ - vendor/strophe/strophe.js
+ - vendor/plugins/jquery.cookie.js
+ - vendor/plugins/xmldom.js
+ - lib/base.js
+ - lib/config.js
+ - lib/connection.js
+ - lib/controller.js
+ - lib/log.js
+ - lib/observer.js
+ - lib/router.js
+ - lib/status_handler.js
+ - lib/runner.js
+ - lib/stanza.js
+ - lib/view.js
+
+#  Return an array of stylesheet filepaths relative to src_dir to include before jasmine specs.
+#stylesheets:
+#  - css/style.css
+#  - stylesheets/*.css
+
+#  Return an array of filepaths relative to spec_dir to include before jasmine specs.
+spec_files:
+ - spec_helper.js
+ - matchers/jsmocha.js
+ - matchers/basic.js
+ - **/*.js
+
+#  Source directory path. Your src_files must be returned relative to this path. Will use root if left blank.
+#src_dir:
+
+#  Spec directory path. Your spec_files must be returned relative to this path.
+#spec_dir: spec/javascripts
