@@ -66,9 +66,6 @@ MockObserver = function(){ this.name = "mock_observer"; };
 var current_http_bind_host = window.location.protocol + '//' + window.location.host + "/http-bind/";
 
 beforeEach(function () {
-  // chrome throws errors when trying to access cookies running from a file
-  var cookie_mock = new Mock(Babylon.config);
-  Babylon.config.stubs('save');
   Strophe.Connection = MockConnection;
 });
 
