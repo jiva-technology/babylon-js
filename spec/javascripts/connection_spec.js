@@ -1,6 +1,5 @@
 describe("Babylon.Connection (new tests)", function() {
   
-  var host                = 'some_host';
   var handler;
   var strophe_connection;
   var strophe_mock;
@@ -17,7 +16,6 @@ describe("Babylon.Connection (new tests)", function() {
     strophe_mock        = new Mock(Strophe);
     jid                 = 'some@jid.com/some_resource';
     password            = 'a_password';
-    host                = 'some_host';
     rid                 = '1234';
     sid                 = '5678';
   }); // end before
@@ -47,7 +45,7 @@ describe("Babylon.Connection (new tests)", function() {
     
     beforeEach(function() {
       Strophe.stubs('Connection').returns(strophe_connection);
-      connection = new Babylon.Connection(host, handler);
+      connection = new Babylon.Connection(handler);
     }); // end before
     
     it("should set the credentials", function() {
@@ -76,7 +74,7 @@ describe("Babylon.Connection (new tests)", function() {
       it("should call the reattach method of strophe", function() {
         var mock = new Mock(Strophe.Connection.prototype);
         Strophe.Connection.prototype.expects('attach').passing(jid, sid, rid, Match.a_function);
-        connection = new Babylon.Connection(host, handler);
+        connection = new Babylon.Connection(handler);
         connection.attach();
         expect(Babylon.config.full_jid()).toEqual(jid);
       }); // end it
@@ -100,7 +98,7 @@ describe("Babylon.Connection (new tests)", function() {
         runs(function(){
           Strophe.Connection.prototype.expects('attach').passing(jid, sid, rid, Match.a_function);
           Mooch.stub_request('POST', '/session/warm.json').returns({ 'body': '{ rid: "'+rid+'", sid: "'+sid+'", jid: "'+jid+'" }' });
-          connection = new Babylon.Connection(host, handler);
+          connection = new Babylon.Connection(handler);
           connection.attach();
         });
         
@@ -117,10 +115,38 @@ describe("Babylon.Connection (new tests)", function() {
   
   describe("disconnect", function() {
     
-    it("should erase the cookie", function() {
+    beforeEach(function(){
+      Mooch.init();
+      Mooch.stub_request('POST', '/session/warm.json').returns({ 'body': '{ rid: "'+rid+'", sid: "'+sid+'", jid: "'+jid+'" }' });
       var jquery_mock = new Mock(jQuery);
-      jQuery.expects('cookie').passing("babylon", null, { path: '/' });
-      connection = new Babylon.Connection(host, handler);
+      handler.stubs('on_status_change');
+      connection = new Babylon.Connection(handler);
+      connection.connect('jid@domain.com', 'pass');
+    });
+    
+    it("should erase the cookie", function() {
+      jQuery.expects('cookie').twice().passing("babylon", null, { path: '/' });
+      connection.disconnect();
+    }); // end it
+    
+    it("should remove the unload callback", function() {
+      connection.disconnect();
+      expect(window.onbeforeunload).toBeNull();
+    }); // end it
+    
+    it("should set reconnect to be false", function() {
+      connection.disconnect();
+      expect(Babylon.config.reconnect()).toBeFalsy();
+    }); // end it
+    
+    it("should set connected to false", function() {
+      connection.disconnect();
+      expect(connection.connected).toBeFalsy();
+    }); // end it
+    
+    it("should call disconnect", function() {
+      var mock = new Mock(Strophe.Connection.prototype);
+      Strophe.Connection.prototype.expects('disconnect');
       connection.disconnect();
     }); // end it
     
