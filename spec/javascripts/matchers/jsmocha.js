@@ -5,7 +5,9 @@ beforeEach(function() {
         this.actual.jsmocha.teardown();
         return true;
       }else{
-        this.actual.jsmocha.teardown();
+        this.message = function() {
+          return this.actual.jsmocha.report();
+        };
         return false;
       }
     }
