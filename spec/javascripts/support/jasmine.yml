@@ -3,7 +3,7 @@ src_files:
  - vendor/jsmocha/jsmocha.js
  - vendor/webmooch/mooch.js
  - vendor/jquery/jquery.js
- - vendor/strophe/strophe.js
+ - vendor/patched_strophejs/strophe.js
  - vendor/plugins/jquery.cookie.js
  - vendor/plugins/xmldom.js
  - lib/base.js

@@ -1,3 +1,0 @@
-[submodule "vendor/strophe"]
-	path = vendor/strophe
-	url = git://github.com/metajack/strophejs.git
