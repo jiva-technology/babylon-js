@@ -17,7 +17,7 @@ describe("Babylon.Runner", function() {
   });
 
   afterEach(function(){
-    delete runner;
+    runner = undefined;
   }); // end after
 
 
@@ -56,6 +56,10 @@ describe("Babylon.Runner", function() {
   
   
   describe("run", function() {
+    
+    beforeEach(function() {
+      delete Babylon.Connection.cookie;
+    }); // end before
     
     it("should call reattach when a cookie exists and attach option passed", function(){
       // TODO set mock on Strophe not babylone connection for (re)attach
