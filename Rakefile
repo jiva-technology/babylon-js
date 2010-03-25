@@ -10,12 +10,13 @@ namespace :jasmine do
     t.spec_files = ['spec/javascripts/support/jasmine_runner.rb']
   end
     task :server do
+      port = ENV['PORT'] || 8888
       require 'spec/javascripts/support/jasmine_config'
       
       puts "your tests are here:"
-      puts "  http://localhost:8888/run.html"
+      puts "  http://localhost:#{port}/run.html"
 
-      Jasmine::Config.new.start_server
+      Jasmine::Config.new.start_server port
     end
 end
 
