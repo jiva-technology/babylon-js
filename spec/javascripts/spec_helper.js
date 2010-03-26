@@ -63,7 +63,8 @@ MockHandler.prototype.on_status_change = function(stat, err){ this.statuses[stat
 MockObserver = function(){ this.name = "mock_observer"; };
 
 
-var current_http_bind_host = window.location.protocol + '//' + window.location.host + "/http-bind/";
+// var current_http_bind_host = window.location.protocol + '//' + window.location.host + "/http-bind/";
+var selenium_http_bind_host = "http://localhost:1234/http-bind/";
 
 beforeEach(function () {
   Strophe.Connection = MockConnection;
