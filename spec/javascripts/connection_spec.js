@@ -23,7 +23,7 @@ describe("Babylon.Connection (new tests)", function() {
   describe("init", function() {
     
     beforeEach(function() {
-      Strophe.expects('Connection').passing(selenium_http_bind_host).returns(strophe_connection);
+      Strophe.expects('Connection').passing(current_http_bind_host).returns(strophe_connection);
       connection = new Babylon.Connection(handler);
     }); // end before
     

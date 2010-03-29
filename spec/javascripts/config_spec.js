@@ -107,7 +107,7 @@ describe("Babylon.config", function() {
     // bare_jid, full_jid, domain and resource already tested in "setting options"
     
     it("should be able to get host", function() {
-      expect(Babylon.config.host()).toEqual(selenium_http_bind_host);
+      expect(Babylon.config.host()).toEqual(current_http_bind_host);
     }); // end it
     
     // session_bot and password already tested in "setting options"
