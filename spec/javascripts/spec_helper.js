@@ -4,6 +4,10 @@ var MockConnection = function(host) {
     this.handlers = [];
 };
 
+MockConnection.prototype.flush = function(){
+  
+};
+
 MockConnection.prototype.connect = function(jid, password, on_status_change){
     this.jid = jid;
     this.password = password;
