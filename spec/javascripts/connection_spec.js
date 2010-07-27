@@ -155,6 +155,21 @@ describe("Babylon.Connection (new tests)", function() {
   
   describe("reattach", function() {
     
+    beforeEach(function() {
+      Strophe.stubs('Connection').returns(strophe_connection);
+      connection = new Babylon.Connection(handler);
+    }); // end before
+    
+    it("should set the credentials", function() {
+      strophe_connection.stubs('attach');
+      connection.reattach(jid, sid, rid, true);
+      expect(Babylon.config.full_jid()).toEqual(jid);
+    }); // end it
+    
+    it("should call the Babylon.attach method", function() {
+      strophe_connection.expects('attach').passing(jid, sid, rid, Match.a_function);
+      connection.reattach(jid, sid, rid, true);
+    }); // end it
   }); // end describe
   
 }); // end describe
