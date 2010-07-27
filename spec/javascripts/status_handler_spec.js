@@ -40,6 +40,11 @@ describe("Babylon.StatusHandler", function() {
   });
   
   describe("on_status_change", function() {
+    it("should call observer.call_on_observers with the event and a routing function", function() {
+      var mock = new Mock(handler);
+      handler.expects('call_on_observers').passing("on_a_atatus", {status: "a_atatus", error: "an error"});
+      handler.on_status_change("a_atatus", "an error");
+    });
   });
 
   describe("on_stanza", function() {
