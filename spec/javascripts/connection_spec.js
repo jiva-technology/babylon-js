@@ -1,4 +1,4 @@
-describe("Babylon.Connection (new tests)", function() {
+describe("Babylon.Connection", function() {
   
   var handler;
   var strophe_connection;
