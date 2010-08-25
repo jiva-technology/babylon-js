@@ -4,6 +4,7 @@ src_files:
  - vendor/webmooch/mooch.js
  - vendor/jquery/jquery.js
  - vendor/patched_strophejs/strophe.js
+ - vendor/xml_builder/*.js
  - vendor/plugins/*.js
  - lib/*.js
 
