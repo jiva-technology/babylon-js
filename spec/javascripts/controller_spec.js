@@ -62,15 +62,14 @@ describe("Babylon.Controller", function() {
     
     beforeEach(function() {
       Babylon.Runner.connection = {};
-      Babylon.Runner.connection.connection = {};
-      var con_mock = new Mock(Babylon.Runner.connection.connection);
+      var con_mock = new Mock(Babylon.Runner.connection);
       
       controller.action_name = action;
     }); // end before
     
     it("should call the sendIQ method of Strophe", function() {
       // TODO this matcher should match against the xml_view_object but jsmocha is not correctly matching the objects
-      Babylon.Runner.connection.connection.expects('sendIQ').passing(Match.an_object, Match.a_function, Match.a_function, 10000);
+      Babylon.Runner.connection.expects('sendIQ').passing(Match.an_object, Match.an_object);
       controller.render_with_callbacks({ data: 'blah', success: function(){}, fail: function(){} });
     }); // end it
   }); // end describe
