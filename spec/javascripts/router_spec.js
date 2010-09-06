@@ -171,13 +171,6 @@ describe("Babylon.Router", function() {
       beforeEach(function(){
         router.query(query).to(controller, action);
       });
-
-      describe("when there are matching queries", function() {
-        it("should execute the route", function() {
-          router.route(stanza);
-          expect(Babylon.Runner.connection.view).toEqual(view_r);
-        });
-      });
       
       describe("where no matching queries", function() {
         it("should return false", function() {
@@ -186,26 +179,7 @@ describe("Babylon.Router", function() {
       });
     });
 
-    describe('raise', function() {
-      
-      var event_name = "test-event";
-      
-      beforeEach(function(){
-        router.event(event_name).to(controller, action);
-      });
-
-      it("should execute_route for each listener on \"name\" with \"args\"", function() {
-        router.raise(event_name, {});
-        expect(Babylon.Runner.connection.view).toEqual(view_r);
-      });
-    });
-
     describe('execute_route', function() {
-      it("should call the action with the object \"stanza\" and send the view", function() {
-        
-        router.execute_route(controller, action, stanza);
-        expect(Babylon.Runner.connection.view).toEqual(view_r);
-      });
 
       describe("when the action evaluates to \"\"", function() {
         

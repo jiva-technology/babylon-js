@@ -1,84 +1,61 @@
 describe("Babylon.Controller", function() {
   
   var controller, xml_view_object;
-  var action  = "test-action";
-  var name    = "test-controller";
+  var action  = 'test-action';
+  var name    = 'test-controller';
 
   beforeEach(function(){
     controller        = new Babylon.Controller();
     controller.name   = name;
-    controller[action] = function(){};
+    var c_mock        = new Mock(controller);
+    controller.stubs('an_action');
+    
+    Babylon.Runner.connection = {};
+    var b_mock        = new Mock(Babylon.Runner.connection);
+    Babylon.Runner.connection.stubs('send');
+    
     xml_view_object = xml("iq");
     Babylon.Views.add(name, action, function(){ return xml_view_object; });
   });
 
   afterEach(function() {
     Babylon.Views.clear();
+    // controller = undefined;
   });
 
   describe("perform", function() {
 
     it("should set the action_name parameter", function() {
-      controller.perform(action);
-      expect(controller.action_name).toEqual(action);
+      controller.perform('an_action');
+      expect(controller.action_name).toEqual('an_action');
     });
 
     it("should call the action specified", function() {
-      controller[action] = function(){ this.perform_action_set_var = "xyz"; };
-      controller.perform(action);
-      expect(controller.perform_action_set_var).toEqual("xyz");
-    });
-
-    it("should render the view attached to the action", function() {
-      expect(controller.perform(action)()).toEqual(xml_view_object);
+      controller.expects('an_action');
+      controller.perform('an_action');
     });
   }); // end describe
 
-  describe("render", function() {
-
-    describe("when render has been called once before", function() {
-      beforeEach(function() {
-        controller.render({view: true});
-      });
-      
-      it("should return false", function(){
-        expect(controller.render()).toEqual(false);
-      });
-    }); // end describe
-
-    it("when {nothing: true} is passed in should set this.view to a callable that returns \"\"", function(){
-      controller.render({nothing: true});
-      expect(controller.view({})).toEqual("");
-    });
-
-    it("when {view: xxx} is passed in should set this.view to that function", function() {
-      expect(controller.render({view: function(l){return "test"; }})()).toEqual("test");
-    });
-
-    describe("when {action: xxx} is passed in", function(){
-      beforeEach(function() {
-        controller["alt-action"] = function(){};
-        Babylon.Views.add(name, "alt-action", function(){ return "abcd"; });
-      });
-
-      it("should pass control to action xxx", function() {
-        expect(controller.render({action: "alt-action"})()).toEqual("abcd");
-      });
-    }); // end describe
-  }); // end describe
-
-  describe("evaluate", function() {
+  describe("render_and_send", function() {
     
-    it("should return \"\" if this.view is unset", function(){
-      controller.view = null;
-      expect(controller.evaluate()).toEqual("");
-    });
-
-    it("should return the result of calling the view in that scope", function(){
-      controller.view = function(bind){ return bind.bound_var; };
-      controller.bound_var = "tada";
-      expect(controller.evaluate()).toEqual("tada");
-    });
+    var view_mock = function(){};
+    
+    beforeEach(function() {
+      var v_mock              = new Mock(Babylon.Views);
+      controller.name         = 'test-controller';
+      controller.action_name  = 'test-action';
+    }); // end before
+    
+    it("should set the options to default when not passed in", function() {
+      Babylon.Views.expects('get').passing('test-controller', 'test-action').returns(view_mock);
+      controller.render_and_send();
+    }); // end it
+    
+    it("should over ride the default options when passed in", function() {
+      Babylon.Views.expects('get').passing('override-controller', 'override-action').returns(view_mock);
+      controller.render_and_send({ controller: 'override-controller', action_name: 'override-action' });
+    }); // end it
+    
   }); // end describe
 
   describe("render_with_callbacks", function() {
@@ -89,9 +66,6 @@ describe("Babylon.Controller", function() {
       var con_mock = new Mock(Babylon.Runner.connection.connection);
       
       controller.action_name = action;
-      
-      // stop auto rendering
-      controller.render({ nothing: true });
     }); // end before
     
     it("should call the sendIQ method of Strophe", function() {
