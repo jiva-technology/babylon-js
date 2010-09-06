@@ -1,2 +1,0 @@
-Chatter = {};
-Chatter.Init = {};
