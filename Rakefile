@@ -1,4 +1,5 @@
-require File.join(File.dirname(__FILE__),".bundle","environment")
+require 'rubygems'
+require 'bundler'
 Bundler.require
 
 namespace :jasmine do
