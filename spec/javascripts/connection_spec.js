@@ -38,6 +38,18 @@ describe("Babylon.Connection", function() {
     it("should set the strophe connection", function() {
       expect(connection.connection).toEqual(strophe_connection);
     }); // end it
+    
+    it("should set the minimum_reconnect_time", function() {
+      expect(connection.minimum_reconnect_time).toEqual(500);
+    }); // end it
+    
+    it("should set the maximum_reconnect_time", function() {
+      expect(connection.maximum_reconnect_time).toEqual(32000);
+    }); // end it
+    
+    it("should set the current_reconnect_time", function() {
+      expect(connection.current_reconnect_time).toEqual(connection.minimum_reconnect_time);
+    }); // end it
   }); // end describe
   
   
