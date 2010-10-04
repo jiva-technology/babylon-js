@@ -52,7 +52,6 @@ describe("Babylon.Connection", function() {
     }); // end it
   }); // end describe
   
-  
   describe("connect", function() {
     
     beforeEach(function() {
@@ -71,7 +70,6 @@ describe("Babylon.Connection", function() {
       connection.connect(jid, password);
     }); // end it
   }); // end describe
-  
   
   describe("attach", function() {
     
@@ -117,7 +115,7 @@ describe("Babylon.Connection", function() {
         // we are testing asynchronous functionality so need to wait until the calls
         // have been made before allowing the suite to continue and verify the mock
         // expectations
-        waits(1000);
+        waits(501);
       }); // end it
       
     }); // end describe
@@ -144,7 +142,7 @@ describe("Babylon.Connection", function() {
       // we are testing asynchronous functionality so need to wait until the calls
       // have been made before allowing the suite to continue and verify the mock
       // expectations
-      waits(500);
+      waits(501);
     });
     
     it("should reconnect_or_destroy_session if AJAX call to /session/warm.json 500's", function(){
@@ -159,7 +157,7 @@ describe("Babylon.Connection", function() {
       // we are testing asynchronous functionality so need to wait until the calls
       // have been made before allowing the suite to continue and verify the mock
       // expectations
-      waits(1000);
+      waits(501);
     });
   });
   
@@ -202,7 +200,6 @@ describe("Babylon.Connection", function() {
     
   }); // end describe
   
-  
   describe("reattach", function() {
     
     beforeEach(function() {
@@ -220,6 +217,58 @@ describe("Babylon.Connection", function() {
       strophe_connection.expects('attach').passing(jid, sid, rid, Match.a_function);
       connection.reattach(jid, sid, rid, true);
     }); // end it
+  }); // end describe
+  
+  describe("on connect handler", function() {
+    
+    beforeEach(function() {
+      connection = new Babylon.Connection(handler);
+    }); // end before
+    
+    describe("attached event", function() {
+      
+      beforeEach(function() {
+        var conn_mock = new Mock(connection);
+      }); // end before
+      
+      describe("when not warming", function() {
+        
+        beforeEach(function() {
+          connection.is_warming = false;
+        }); // end before
+
+        it("should call on_attached immediately", function() {
+          connection.expects('on_attached');
+          connection.on_connect(Strophe.Status.ATTACHED, "", true);
+        }); // end it
+        
+      }); // end describe
+      
+      describe("when warming", function() {
+        
+        beforeEach(function() {
+          connection.is_warming = true;
+        }); // end before
+
+        it("should wait for 500ms then send a precence message and call on_attached", function() {
+          runs(function(){
+            connection.expects('send_presence');
+            connection.expects('on_attached');
+            connection.on_connect(Strophe.Status.ATTACHED, "", true);
+          });
+          waits(501);
+        }); // end it
+
+        it("should not send a precence message and call on_attached before 500ms has expired", function() {
+          connection.expects('send_presence').never();
+          connection.expects('on_attached').never();
+          connection.on_connect(Strophe.Status.ATTACHED, "", true);
+        }); // end it
+        
+      }); // end describe
+      
+    }); // end describe
+    
   }); // end describe
   
 }); // end describe
