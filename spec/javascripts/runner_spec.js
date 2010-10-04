@@ -81,7 +81,12 @@ describe("Babylon.Runner", function() {
     it("should warm session when no cookie exists", function(){
       var mock = new Mock(jQuery);
       jQuery.stubs("cookie");
-      jQuery.expects("post").passing("/session/warm.json", Match.an_object, Match.a_function, "json");
+      jQuery.expects("ajax").passing(function(args){
+        var object = args[0];
+        return object.type == 'POST' &&
+        object.url      == '/session/warm.json' &&
+        object.dataType == 'json'
+      });
       runner.run();
       expect(jQuery).verify_expectations();
     }); // end it

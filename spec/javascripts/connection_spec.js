@@ -38,6 +38,18 @@ describe("Babylon.Connection", function() {
     it("should set the strophe connection", function() {
       expect(connection.connection).toEqual(strophe_connection);
     }); // end it
+    
+    it("should set the minimum_reconnect_time", function() {
+      expect(connection.minimum_reconnect_time).toEqual(500);
+    }); // end it
+    
+    it("should set the maximum_reconnect_time", function() {
+      expect(connection.maximum_reconnect_time).toEqual(32000);
+    }); // end it
+    
+    it("should set the current_reconnect_time", function() {
+      expect(connection.current_reconnect_time).toEqual(connection.minimum_reconnect_time);
+    }); // end it
   }); // end describe
   
   
@@ -112,6 +124,44 @@ describe("Babylon.Connection", function() {
     
   }); // end describe
   
+  describe("warm_and_attach", function() {
+    
+    beforeEach(function() {
+      handler.stubs('on_status_change');
+      Mooch.init();
+      
+      var strophe_mock = new Mock(Strophe.Connection.prototype);
+    }); // end before
+    
+    it("should make an AJAX call to /session/warm.json and then call attach", function(){
+      runs(function(){
+        Strophe.Connection.prototype.expects('attach').passing(jid, sid, rid, Match.a_function);
+        Mooch.stub_request('POST', '/session/warm.json').returns({ 'body': '{ rid: "'+rid+'", sid: "'+sid+'", jid: "'+jid+'" }' });
+        var connection = new Babylon.Connection(handler);
+        connection.warm_and_attach();
+      });
+      
+      // we are testing asynchronous functionality so need to wait until the calls
+      // have been made before allowing the suite to continue and verify the mock
+      // expectations
+      waits(500);
+    });
+    
+    it("should reconnect_or_destroy_session if AJAX call to /session/warm.json 500's", function(){
+      runs(function(){
+        var babylon_mock = new Mock(Babylon.Connection.prototype);
+        Babylon.Connection.prototype.expects('reconnect_or_destroy_session');
+        Mooch.stub_request('POST', '/session/warm.json').returns({ 'status': 500 });
+        var connection = new Babylon.Connection(handler);
+        connection.warm_and_attach();
+      });
+      
+      // we are testing asynchronous functionality so need to wait until the calls
+      // have been made before allowing the suite to continue and verify the mock
+      // expectations
+      waits(1000);
+    });
+  });
   
   describe("disconnect", function() {
     
