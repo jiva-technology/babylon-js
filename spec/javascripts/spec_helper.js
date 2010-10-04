@@ -51,6 +51,8 @@ MockConnection.prototype.addHandler = function(func){
     this.handlers.push(func);
 };
 
+MockConnection.prototype.deleteHandler = function(func){};
+
 MockConnection.prototype.send = function(s){ this.stanza = s; };
 
 /* This is used so we can assert that the handler has been called */
