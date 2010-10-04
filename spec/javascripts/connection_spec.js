@@ -157,7 +157,7 @@ describe("Babylon.Connection", function() {
       // we are testing asynchronous functionality so need to wait until the calls
       // have been made before allowing the suite to continue and verify the mock
       // expectations
-      waits(501);
+      waits(200);
     });
   });
   
