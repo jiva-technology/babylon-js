@@ -16,31 +16,6 @@ describe("ServerDate", function() {
     });
   });
   
-  describe('Class method "now"', function () {
-    it('should return time that is ahead of Date by "skew" ms', function () {
-      ServerDate.skew = 0
-      
-      var server_date = ServerDate.now()
-      var date        = Date.now()
-      expect( Math.round( server_date / 1000 ) ).toEqual( Math.round( date / 1000 ) )
-      
-      ServerDate.skew = 3000
-      var server_date = ServerDate.now()
-      var date        = Date.now()
-      expect( Math.round( server_date / 1000 ) ).toEqual( Math.round( ( date + 3000 ) / 1000 ) )
-      
-      ServerDate.skew = -6000
-      var server_date = ServerDate.now()
-      var date        = Date.now()
-      expect( Math.round( server_date / 1000 ) ).toEqual( Math.round( ( date - 6000 ) / 1000 ) )
-      
-      ServerDate.skew = -12000
-      var server_date = ServerDate.now()
-      var date        = Date.now()
-      expect( Math.round( server_date / 1000 ) ).toEqual( Math.round( ( date - 12000 ) / 1000 ) )
-    });
-  });
-  
   describe('Class when initialized', function () {
     describe('with no parameters', function () {
       it('should return time that is ahead of Date by "skew" ms', function () {
