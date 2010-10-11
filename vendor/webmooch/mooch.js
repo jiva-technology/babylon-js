@@ -115,6 +115,11 @@ Mooch.XMLHttpRequest.prototype.getResponseHeader = function(){
   console.log(arguments);
 };
 
+Mooch.XMLHttpRequest.prototype.onreadystatechange = function(){
+  console.log("onreadystatechange caught with arguments");
+  console.log(arguments);
+};
+
 Mooch.XMLHttpRequest.prototype.send = function(){
   console.log("send caught with arguments");
   console.log(arguments);

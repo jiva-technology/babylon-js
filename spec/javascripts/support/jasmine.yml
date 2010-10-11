@@ -3,7 +3,8 @@ src_files:
  - vendor/jsmocha/jsmocha.js
  - vendor/webmooch/mooch.js
  - vendor/jquery/jquery.js
- - vendor/patched_strophejs/strophe.js
+ - vendor/plugins/jquery.hth_log.js
+ - vendor/strophejs/*.js
  - vendor/xml_builder/*.js
  - vendor/plugins/*.js
  - lib/*.js

@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/kernow/jasmine-ruby.git
-  revision: 7a15a6f69df208e90050ead9af98445f268b8277
+  revision: 7a15a6f
   submodules: true
   specs:
     jasmine (0.4.6)
