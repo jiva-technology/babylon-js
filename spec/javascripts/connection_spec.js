@@ -73,15 +73,15 @@ describe("Babylon.Connection", function() {
   
   describe("attach", function() {
     
-    describe("with a previous session cookie", function() {
+    describe("with a previous saved session", function() {
       
       beforeEach(function() {
         Babylon.config.set({ 'attach':true });
-        var jquery_mock = new Mock(jQuery);
-        jQuery.stubs('cookie').returns(jid + ',' + sid + ',' + rid);
+        var m = new Mock(Babylon.Connection.prototype);
+        Babylon.Connection.prototype.stubs('load').returns( {jid: jid, sid: sid, rid: rid} );
       }); // end before
       
-      it("should call the reattach method of strophe", function() {
+      it("should call the attach method of strophe", function() {
         var mock = new Mock(Strophe.Connection.prototype);
         Strophe.Connection.prototype.expects('attach').passing(jid, sid, rid, Match.a_function);
         connection = new Babylon.Connection(handler);
@@ -92,19 +92,20 @@ describe("Babylon.Connection", function() {
     }); // end describe
     
     
-    describe("without a previous session cookie", function() {
+    describe("without a previous saved session", function() {
       
       beforeEach(function() {
         Babylon.config.set({ 'attach': true });
         Mooch.init();
-        
-        var jquery_mock = new Mock(jQuery);
+        handler.stubs('on_status_change');
+                
+        var m = new Mock(Babylon.Connection.prototype);
+        Babylon.Connection.prototype.stubs('load').returns( false );
         var strophe_mock = new Mock(Strophe.Connection.prototype);
-        jQuery.stubs('cookie');
       }); // end before
       
       
-      it("should call the reattach method of strophe", function() {
+      it("should warm and call the attach method of strophe", function() {
         runs(function(){
           Strophe.Connection.prototype.expects('attach').passing(jid, sid, rid, Match.a_function);
           Mooch.stub_request('POST', '/session/warm.json').returns({ 'body': '{ rid: "'+rid+'", sid: "'+sid+'", jid: "'+jid+'" }' });
@@ -166,14 +167,15 @@ describe("Babylon.Connection", function() {
     beforeEach(function(){
       Mooch.init();
       Mooch.stub_request('POST', '/session/warm.json').returns({ 'body': '{ rid: "'+rid+'", sid: "'+sid+'", jid: "'+jid+'" }' });
-      var jquery_mock = new Mock(jQuery);
       handler.stubs('on_status_change');
       connection = new Babylon.Connection(handler);
       connection.connect('jid@domain.com', 'pass');
     });
     
-    it("should erase the cookie", function() {
-      jQuery.expects('cookie').twice().passing("babylon", null, { path: '/' });
+    it("should reset the saved session", function() {
+      var mock = new Mock(connection);
+      connection.expects('reset').twice();
+      
       connection.disconnect();
     }); // end it
     
@@ -218,6 +220,58 @@ describe("Babylon.Connection", function() {
       connection.reattach(jid, sid, rid, true);
     }); // end it
   }); // end describe
+  
+  describe("load", function() {
+    beforeEach(function(){
+      window.sessionStorage.removeItem('babylon');
+      connection = new Babylon.Connection(handler);
+    });
+    
+    it("should return the credentials using sessionStorage", function(){
+      var credentials = {jid: jid, sid: sid, rid: rid};
+      window.sessionStorage.setItem('babylon', JSON.stringify(credentials));
+      
+      expect( connection.load() ).toEqual( credentials );
+    });
+    
+    it("should return false if there are no credentials found", function(){
+      expect( connection.load() ).toBeFalsy();
+    });
+  });
+  
+  describe("save", function() {
+    beforeEach(function(){
+      var m1 = new Mock(Babylon.config);
+      Babylon.config.stubs('full_jid').returns( "foo@bar/blah" );
+      
+      connection = new Babylon.Connection(handler);
+      connection.connection = {sid: 123, rid: 456};
+    });
+    
+    it("should save the credentials using sessionStorage", function(){
+      window.sessionStorage.removeItem('babylon');
+      
+      connection.save();
+      
+      expect( connection.load() ).toEqual({jid: 'foo@bar/blah', sid: 123, rid: 456});
+    });
+  });
+  
+  describe("reset", function() {
+    beforeEach(function(){
+      connection = new Babylon.Connection(handler);
+    });
+    
+    it("should clear any saved credentials in sessionStorage", function(){
+      window.sessionStorage.setItem('babylon', "foo");
+      
+      expect( window.sessionStorage.getItem('babylon') !== null ).toBeTruthy();
+      
+      connection.reset();
+      
+      expect( window.sessionStorage.getItem('babylon') === null ).toBeTruthy();
+    });
+  });
   
   describe("on connect handler", function() {
     
