@@ -19,7 +19,8 @@ class Jasmine::Config
     start_servers
             
     config_file = File.join(File.dirname(File.dirname(File.dirname(File.dirname(__FILE__)))),'config', 'selenium.yml')
-    @selenium_config = ::SaucelabsAdapter::SeleniumConfig.new( @browser , config_file)
+    
+    @selenium_config = ::SaucelabsAdapter::SeleniumConfig.new browser, config_file
     @selenium_config[:tunnel_to_localhost_port] = @jasmine_server_port
     @selenium_config[:application_port]         = @jasmine_server_port
     @selenium_config[:saucelabs_username]       = ENV['SAUCELABS_USERNAME']   if ENV['SAUCELABS_USERNAME']
@@ -27,7 +28,7 @@ class Jasmine::Config
     
     @sauce_tunnel = SaucelabsAdapter::Tunnel.factory( @selenium_config  )
     @sauce_tunnel.start_tunnel
-        
+    
     @client = @selenium_config.create_driver( )
     @client.start
     @client.open '/'
@@ -36,7 +37,6 @@ class Jasmine::Config
   def stop
     @client.stop
     @sauce_tunnel.shutdown
-    stop_servers
   end
   
   def eval_js(script)
