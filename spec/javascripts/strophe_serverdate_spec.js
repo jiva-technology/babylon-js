@@ -44,4 +44,20 @@ describe("Strophe ServerDate Connection", function() {
     
   });
   
+  it("should not set skew if no Date header available", function(){    
+    Strophe._connectionPlugins.serverdate.init();
+    
+    ServerDate.skew = 48;
+    
+    var request1      = new Strophe.Request(new Strophe.Builder('message', {to: 'you', from: 'me'}), function(){}, 1, 0);
+    var mock_request1 = new Mock(request1);
+    
+    mock_request1.readyState = 2;
+    mock_request1.stubs('getResponseHeader').returns( null ); // No Date header
+    mock_request1.xhr.onreadystatechange.apply( mock_request1 );
+    
+    expect( ServerDate.skew ).toEqual( 48 );
+    
+  });
+  
 });
