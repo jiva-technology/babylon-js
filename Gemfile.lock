@@ -37,7 +37,6 @@ GEM
     selenium-client (1.2.18)
     selenium-rc (2.2.4)
       selenium-client (>= 1.2.18)
-    sprockets (1.0.2)
 
 PLATFORMS
   ruby
@@ -47,4 +46,3 @@ DEPENDENCIES
   mongrel
   rake
   saucelabs-adapter
-  sprockets
