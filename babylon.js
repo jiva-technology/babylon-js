@@ -9,4 +9,5 @@
 //= require "lib/stanza"
 //= require "lib/status_handler"
 //= require "lib/strophe.serverdate"
+//= require "lib/strophe.connectionmanager"
 //= require "lib/view"
