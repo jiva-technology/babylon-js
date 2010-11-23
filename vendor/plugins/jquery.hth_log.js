@@ -1,5 +1,3 @@
-//= require <consolex>
-
 (function($){ 
   
   $.hth_log = (function() {
@@ -60,8 +58,10 @@
 
     $.each(["log", "debug", "info", "warn", "error"], function(i, name) { 
       methods[name] = function(message) {
-        console[name](datetime());
-        console[name](message);
+        if (typeof window.console != 'undefined') {
+          console[name](datetime();
+          console[name](message);
+        }
         save_log_line(datetime());
         save_log_line(message);
        };
