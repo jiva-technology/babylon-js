@@ -1,5 +1,3 @@
-//= require <consolex>
-
 (function($){ 
   
   $.hth_log = (function() {
