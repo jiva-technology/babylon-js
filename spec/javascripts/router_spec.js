@@ -100,7 +100,7 @@ describe("Babylon.Router", function() {
   describe("event", function() {
     var event_name = "test-event";
 
-    it("should add the event \"name\" onto this.events", function() {
+    it("should add the event 'name' onto this.events", function() {
       router.event(event_name);
       expect(router.events[event_name]).toNotEqual(undefined);
       expect(router.events[event_name].length).toEqual(0);
@@ -170,20 +170,40 @@ describe("Babylon.Router", function() {
       
       beforeEach(function(){
         router.query(query).to(controller, action);
+        var m = new Mock(Babylon.Router.prototype);
       });
+
+      describe("with a matching route", function() {
+
+        it("should execute a route", function() {
+          Babylon.Router.prototype.expects('execute_route');
+          router.route(stanza);
+        });
+        
+        it("should stop matching routes when one is matched", function() {
+          var m = new Mock(jQuery);
+          jQuery.spies('find').once().passing(query, Match.an_object, Match.an_object);
+          router.query(query).to(controller, "never-called");
+          router.route(stanza);
+        }); // end it
+
+      }); // end describe
       
       describe("where no matching queries", function() {
-        it("should return false", function() {
-          expect(router.route(unmatched_stanza)).toEqual(false);
+        
+        it("should not execute a route", function() {
+          Babylon.Router.prototype.expects('execute_route').never();
+          router.route(unmatched_stanza);
         });
+
       });
     });
 
     describe('execute_route', function() {
 
-      describe("when the action evaluates to \"\"", function() {
+      describe("when the action evaluates to ''", function() {
         
-        it("should  return false", function() {
+        it("should return false", function() {
           expect(router.execute_route(controller, action_e, stanza)).toEqual(false);
         });
       });
