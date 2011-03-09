@@ -1,3 +1,5 @@
+/*global $msg: false, $pres: false */
+
 describe("Babylon.Route", function() {
   var route = {};
 

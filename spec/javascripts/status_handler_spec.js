@@ -1,3 +1,5 @@
+/*global $msg: false */
+
 describe("Babylon.StatusHandler", function() {
   var router = {};
   var observer = {};

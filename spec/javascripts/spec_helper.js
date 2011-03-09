@@ -56,7 +56,7 @@ MockConnection.prototype.deleteHandler = function(func){};
 MockConnection.prototype.send = function(s){ this.stanza = s; };
 
 /* This is used so we can assert that the handler has been called */
-MockHandler = function(){
+var MockHandler = function(){
     this.reset();
 };
 MockHandler.prototype.reset = function(s){ 
@@ -66,7 +66,7 @@ MockHandler.prototype.on_stanza = function(s){ this._on_stanza = true;};
 MockHandler.prototype.on_status_change = function(stat, err){ this.statuses[stat] = {status: stat, error: err}; };
 
 /* This fakes being the "observer" that Babylon.Observer calls into */
-MockObserver = function(){ this.name = "mock_observer"; };
+var MockObserver = function(){ this.name = "mock_observer"; };
 
 
 var current_http_bind_host = window.location.protocol + '//' + window.location.host + "/http-bind/";

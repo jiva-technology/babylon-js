@@ -1,3 +1,5 @@
+/*global MockObserver: false */
+
 describe("Babylon.Observer", function() {
   var observer = {};
   var obs = {};

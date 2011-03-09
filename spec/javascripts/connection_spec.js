@@ -1,3 +1,5 @@
+/*global current_http_bind_host: false, Mooch: false */
+
 describe("Babylon.Connection", function() {
   
   var handler;

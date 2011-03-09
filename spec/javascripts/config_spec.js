@@ -1,3 +1,5 @@
+/*global current_http_bind_host: false */
+
 describe("Babylon.config", function() {
   
   beforeEach(function() {

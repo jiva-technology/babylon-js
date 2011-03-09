@@ -1,3 +1,5 @@
+/*global xml: false */
+
 describe("Babylon.Controller", function() {
   
   var controller, xml_view_object;

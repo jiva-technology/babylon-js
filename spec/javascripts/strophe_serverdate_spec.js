@@ -1,3 +1,5 @@
+/*global ServerDate: false */
+
 describe("Strophe ServerDate Connection", function() {
   
   it("should register 'serverdate' connection plugin", function(){
