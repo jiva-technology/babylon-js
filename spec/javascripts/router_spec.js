@@ -160,7 +160,7 @@ describe("Babylon.Router", function() {
       Babylon.Stanzas.add(controller_name, action, function(l){ return view_r; });
       Babylon.Stanzas.add(controller_name, action_e, function(l){ return ""; });
 
-      Babylon.Runner.connection = {send: function(view) { this.view = view; }};
+      Babylon.Runner.connection = {send: function(stanza) { this.stanza = stanza; }};
     });
     
     afterEach(function() {
