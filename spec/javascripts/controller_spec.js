@@ -17,11 +17,11 @@ describe("Babylon.Controller", function() {
     Babylon.Runner.connection.stubs('send');
     
     xml_view_object = xml("iq");
-    Babylon.Views.add(name, action, function(){ return xml_view_object; });
+    Babylon.Stanzas.add(name, action, function(){ return xml_view_object; });
   });
 
   afterEach(function() {
-    Babylon.Views.clear();
+    Babylon.Stanzas.clear();
     // controller = undefined;
   });
 
@@ -43,18 +43,18 @@ describe("Babylon.Controller", function() {
     var view_mock = function(){};
     
     beforeEach(function() {
-      var v_mock              = new Mock(Babylon.Views);
+      var v_mock              = new Mock(Babylon.Stanzas);
       controller.name         = 'test-controller';
       controller.action_name  = 'test-action';
     }); // end before
     
     it("should set the options to default when not passed in", function() {
-      Babylon.Views.expects('get').passing('test-controller', 'test-action').returns(view_mock);
+      Babylon.Stanzas.expects('get').passing('test-controller', 'test-action').returns(view_mock);
       controller.render_and_send();
     }); // end it
     
     it("should over ride the default options when passed in", function() {
-      Babylon.Views.expects('get').passing('override-controller', 'override-action').returns(view_mock);
+      Babylon.Stanzas.expects('get').passing('override-controller', 'override-action').returns(view_mock);
       controller.render_and_send({ controller: 'override-controller', action_name: 'override-action' });
     }); // end it
     
