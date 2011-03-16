@@ -21,8 +21,7 @@ describe("Babylon.Controller", function() {
   });
 
   afterEach(function() {
-    Babylon.Stanzas.clear();
-    // controller = undefined;
+    Babylon.Stanzas.items = {};
   });
 
   describe("perform", function() {
@@ -40,8 +39,6 @@ describe("Babylon.Controller", function() {
 
   describe("render_and_send", function() {
     
-    var view_mock = function(){};
-    
     beforeEach(function() {
       var v_mock              = new Mock(Babylon.Stanzas);
       controller.name         = 'test-controller';
@@ -49,12 +46,12 @@ describe("Babylon.Controller", function() {
     }); // end before
     
     it("should set the options to default when not passed in", function() {
-      Babylon.Stanzas.expects('get').passing('test-controller', 'test-action').returns(view_mock);
+      Babylon.Stanzas.expects('build').passing('test-controller/test-action');
       controller.render_and_send();
     }); // end it
     
     it("should over ride the default options when passed in", function() {
-      Babylon.Stanzas.expects('get').passing('override-controller', 'override-action').returns(view_mock);
+      Babylon.Stanzas.expects('build').passing('override-controller/override-action');
       controller.render_and_send({ controller: 'override-controller', action_name: 'override-action' });
     }); // end it
     
@@ -65,8 +62,8 @@ describe("Babylon.Controller", function() {
     beforeEach(function() {
       Babylon.Runner.connection = {};
       var con_mock = new Mock(Babylon.Runner.connection);
-      
       controller.action_name = action;
+      Babylon.Stanzas.add('test-controller/test-action',function(data){return {};});
     }); // end before
     
     it("should call the sendIQ method of Strophe", function() {

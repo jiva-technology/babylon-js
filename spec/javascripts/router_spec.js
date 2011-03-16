@@ -164,7 +164,7 @@ describe("Babylon.Router", function() {
     });
     
     afterEach(function() {
-      Babylon.Stanzas.clear();
+      Babylon.Stanzas.items = {};
     });
 
     describe('route', function() {
