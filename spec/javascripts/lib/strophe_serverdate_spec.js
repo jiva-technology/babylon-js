@@ -2,6 +2,14 @@
 
 describe("Strophe ServerDate Connection", function() {
   
+  beforeEach(function(){
+    Mooch.init();
+  });
+  
+  afterEach(function(){
+    Mooch.reset();
+  });
+  
   it("should register 'serverdate' connection plugin", function(){
     expect( Strophe._connectionPlugins.serverdate ).toBeDefined();
   });

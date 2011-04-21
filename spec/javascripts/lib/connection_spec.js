@@ -107,6 +107,10 @@ describe("Babylon.Connection", function() {
       }); // end before
       
       
+      afterEach(function(){
+        Mooch.reset();
+      });
+      
       it("should warm and call the attach method of strophe", function() {
         runs(function(){
           Strophe.Connection.prototype.expects('attach').passing(jid, sid, rid, Match.a_function);
@@ -133,6 +137,10 @@ describe("Babylon.Connection", function() {
       
       var strophe_mock = new Mock(Strophe.Connection.prototype);
     }); // end before
+    
+    afterEach(function(){
+      Mooch.reset();
+    });
     
     it("should make an AJAX call to /session/warm.json and then call attach", function(){
       runs(function(){
@@ -172,6 +180,10 @@ describe("Babylon.Connection", function() {
       handler.stubs('on_status_change');
       connection = new Babylon.Connection(handler);
       connection.connect('jid@domain.com', 'pass');
+    });
+    
+    afterEach(function(){
+      Mooch.reset();
     });
     
     it("should reset the saved session", function() {
@@ -278,6 +290,9 @@ describe("Babylon.Connection", function() {
   describe("on connect handler", function() {
     
     beforeEach(function() {
+      // Can't use jsmocha here as the teardown causes the stub to be destroyed
+      // before all of the code has been run in IE8
+      handler.on_status_change = function(){}; 
       connection = new Babylon.Connection(handler);
     }); // end before
     
@@ -314,11 +329,14 @@ describe("Babylon.Connection", function() {
           });
           waits(501);
         }); // end it
-
+  
         it("should not send a precence message and call on_attached before 500ms has expired", function() {
-          connection.expects('send_presence').never();
-          connection.expects('on_attached').never();
-          connection.on_connect(Strophe.Status.ATTACHED, "", true);
+          runs(function(){
+            connection.expects('send_presence').never();
+            connection.expects('on_attached').never();
+            connection.on_connect(Strophe.Status.ATTACHED, "", true);
+          });
+          waits(400);
         }); // end it
         
       }); // end describe
