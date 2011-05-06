@@ -271,6 +271,59 @@ describe("Babylon.Connection", function() {
     });
   });
   
+  describe("on_attached", function() {
+    
+    beforeEach(function(){
+      handler.on_status_change = function(){}; 
+      connection = new Babylon.Connection(handler);
+      var conn_mock = new Mock(connection);
+    });
+    
+    it("should run register_unload_callback", function(){
+      connection.expects('register_unload_callback');
+      
+      connection.on_attached();
+    });
+    
+  });
+  
+  describe("register_unload_callback", function() {
+    
+    beforeEach(function(){
+      connection = new Babylon.Connection(handler);
+      var c = new Mock(connection);
+      var m = new Mock(MockConnection.prototype);
+      var j = new Mock(jQuery.prototype);
+      
+      MockConnection.prototype.stubs('pause');
+    });
+    
+    it("should run 'save' when window is unloaded", function(){
+      jQuery.prototype.stubs('unload').passing(function(params){ params[0](); });
+      
+      connection.expects('save');
+      
+      connection.register_unload_callback();
+    });
+    
+    it("should run 'pause' when window is unloaded", function(){      
+      jQuery.prototype.stubs('unload').passing(function(params){ params[0](); });
+      
+      MockConnection.prototype.expects('pause');
+
+      connection.register_unload_callback();      
+    });
+    
+    it("should bind to window unload using jquery", function(){
+      // This is important as window.onbeforeunload behaves differently in IE8
+      // For example clicking <a href='javascript:;'>Foo</a> will fire onbeforeunload
+      jQuery.prototype.expects('unload').passing(Match.a_function);
+
+      connection.register_unload_callback();
+    });
+    
+  });
+  
   describe("reset", function() {
     beforeEach(function(){
       connection = new Babylon.Connection(handler);
