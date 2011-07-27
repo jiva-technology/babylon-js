@@ -114,7 +114,7 @@ describe("Babylon.Connection", function() {
       it("should warm and call the attach method of strophe", function() {
         runs(function(){
           Strophe.Connection.prototype.expects('attach').passing(jid, sid, rid, Match.a_function);
-          Mooch.stub_request('POST', '/session/warm.json').returns({ 'body': '{ rid: "'+rid+'", sid: "'+sid+'", jid: "'+jid+'" }' });
+          Mooch.stub_request('POST', '/session/warm.json').returns({ 'body': '{ "rid": "'+rid+'", "sid": "'+sid+'", "jid": "'+jid+'" }' });
           connection = new Babylon.Connection(handler);
           connection.attach();
         });
@@ -145,7 +145,7 @@ describe("Babylon.Connection", function() {
     it("should make an AJAX call to /session/warm.json and then call attach", function(){
       runs(function(){
         Strophe.Connection.prototype.expects('attach').passing(jid, sid, rid, Match.a_function);
-        Mooch.stub_request('POST', '/session/warm.json').returns({ 'body': '{ rid: "'+rid+'", sid: "'+sid+'", jid: "'+jid+'" }' });
+        Mooch.stub_request('POST', '/session/warm.json').returns({ 'body': '{ "rid": "'+rid+'", "sid": "'+sid+'", "jid": "'+jid+'" }' });
         var connection = new Babylon.Connection(handler);
         connection.warm_and_attach();
       });
