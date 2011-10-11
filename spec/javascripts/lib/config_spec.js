@@ -67,11 +67,14 @@ describe("Babylon.config", function() {
     }); // end it
     
     it("should be able to set the jid", function() {
-      Babylon.config.set({ 'jid': 'tom@penny.com/miniramp' });
-      expect(Babylon.config.bare_jid()).toEqual('tom@penny.com');
-      expect(Babylon.config.domain()).toEqual('penny.com');
-      expect(Babylon.config.resource()).toEqual('miniramp');
-      expect(Babylon.config.full_jid()).toEqual('tom@penny.com/miniramp');
+      Babylon.config.set({ 'jid': 'tom.thumb@penny.com/miniramp' });
+      expect(Babylon.config.bare_jid()    ).toEqual('tom.thumb@penny.com');
+      expect(Babylon.config.domain()      ).toEqual('penny.com');
+      expect(Babylon.config.nickname()    ).toEqual('tom.thumb');
+      expect(Babylon.config.thumbIcon()   ).toEqual('/users/tom.thumb/icon/thumb');
+      expect(Babylon.config.profilePath() ).toEqual('/users/tom.thumb');
+      expect(Babylon.config.resource()    ).toEqual('miniramp');
+      expect(Babylon.config.full_jid()    ).toEqual('tom.thumb@penny.com/miniramp');
     }); // end it
     
     it("should be able to set the jid without a resource", function() {
