@@ -28,11 +28,11 @@
     }
 
     function datetime(){
-      return new Date().toUTCString() + ":";
+      return new Date().toUTCString();
     }
 
-    function save_log_line(line){
-      log_store.push(line);
+    function save_log_line(datetime, args){
+      log_store.push({datetime: datetime, message: args});
       if (log_store.length === 2000){
         log_store.shift();
       }
@@ -136,13 +136,13 @@
     $.each(["log", "debug", "info", "warn", "error"], function(i, name) { 
       methods[name] = function() {
         var date_stamp = datetime();
+        // Make arguments play like an array
+        var args = Array.prototype.slice.call(arguments,0);
+        save_log_line(date_stamp, args);
         if (typeof window.console != 'undefined') {
-          // Make arguments play like an array
-          var args = Array.prototype.slice.call(arguments,0);
-          args.unshift(date_stamp);
-          console[name].apply(console,args);
+          var full_args = [date_stamp+":"].concat( args );
+          console[name].apply(console,full_args);
         }
-        save_log_line(date_stamp, arguments);
        };
     });
     
