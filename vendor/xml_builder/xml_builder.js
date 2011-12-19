@@ -32,7 +32,7 @@ xml.escape = function(t) {
     t = t.replace(/\&/g, "&amp;");
     t = t.replace(/</g,  "&lt;");
     t = t.replace(/>/g,  "&gt;");
-    return t;    
+    return t;
 };
 
 xml.build = function(tag, attrs){

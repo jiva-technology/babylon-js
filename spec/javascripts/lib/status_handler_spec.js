@@ -40,7 +40,7 @@ describe("Babylon.StatusHandler", function() {
       expect(router.executed_routes.pop()).toEqual(["obs", "event", {status: "running"}]);
     });
   });
-  
+
   describe("on_status_change", function() {
     it("should call observer.call_on_observers with the event and a routing function", function() {
       var mock = new Mock(handler);

@@ -31,7 +31,7 @@ describe("Babylon.Route", function() {
       beforeEach(function(){
         stanza = $.xmlDOM('<message type="chat" to="student@hth.com" from="session_bot@htt.com"><body>I am the session bot!</body></message>');
       });
-      
+
       it("should return false", function(){
         expect(route.accepts(stanza)).toEqual(false);
       });
@@ -69,7 +69,7 @@ describe("Babylon.Router", function() {
   });
 
   describe("query", function() {
-    
+
     it("should return a closure that provides .to", function() {
       var q = router.query("test-path-2");
       expect(q.to).toNotEqual(null);
@@ -137,11 +137,11 @@ describe("Babylon.Router", function() {
         expect(e.event).toNotEqual(undefined);
       });
     });
-      
+
   });
 
   describe('routing_functions', function() {
-    
+
     var controller = {};
     var action = "test-action";
     var action_e = "test-action-e";
@@ -162,14 +162,14 @@ describe("Babylon.Router", function() {
 
       Babylon.Runner.connection = {send: function(stanza) { this.stanza = stanza; }};
     });
-    
+
     afterEach(function() {
       Babylon.Stanzas.items = {};
     });
 
     describe('route', function() {
       var query = 'message[from="tutor@hth.com"]';
-      
+
       beforeEach(function(){
         router.query(query).to(controller, action);
         var m = new Mock(Babylon.Router.prototype);
@@ -181,7 +181,7 @@ describe("Babylon.Router", function() {
           Babylon.Router.prototype.expects('execute_route');
           router.route(stanza);
         });
-        
+
         it("should stop matching routes when one is matched", function() {
           var m = new Mock(jQuery);
           jQuery.spies('find').once().passing(query, Match.an_object, Match.an_object);
@@ -190,9 +190,9 @@ describe("Babylon.Router", function() {
         }); // end it
 
       }); // end describe
-      
+
       describe("where no matching queries", function() {
-        
+
         it("should not execute a route", function() {
           Babylon.Router.prototype.expects('execute_route').never();
           router.route(unmatched_stanza);
@@ -204,7 +204,7 @@ describe("Babylon.Router", function() {
     describe('execute_route', function() {
 
       describe("when the action evaluates to ''", function() {
-        
+
         it("should return false", function() {
           expect(router.execute_route(controller, action_e, stanza)).toEqual(false);
         });

@@ -5,7 +5,7 @@ var MockConnection = function(host) {
 };
 
 MockConnection.prototype.flush = function(){
-  
+
 };
 
 MockConnection.prototype.connect = function(jid, password, on_status_change){
@@ -59,7 +59,7 @@ MockConnection.prototype.send = function(s){ this.stanza = s; };
 var MockHandler = function(){
     this.reset();
 };
-MockHandler.prototype.reset = function(s){ 
+MockHandler.prototype.reset = function(s){
   this.statuses = {};
 };
 MockHandler.prototype.on_stanza = function(s){ this._on_stanza = true;};
@@ -75,7 +75,7 @@ beforeEach(function () {
   Strophe.Connection = MockConnection;
 });
 
-    
+
 afterEach(function(){
   $(Mock.mocked_objects).each(function(i, obj){
     expect(obj).verify_expectations();

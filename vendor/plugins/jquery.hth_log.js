@@ -1,7 +1,7 @@
-(function($){ 
-  
+(function($){
+
   $.hth_log = (function() {
-    
+
     var $support_form;
     var log_store = [];
 
@@ -44,21 +44,21 @@
               'session_id':  session_id(),
               'email':       $support_form.find('#ticket_email').val(),
               'description': $support_form.find('#ticket_description').val(),
-              'subject':     $support_form.find('#ticket_subject').val()      
+              'subject':     $support_form.find('#ticket_subject').val()
              };
     }
 
     function user_hth_logs_path() {
       return "/tickets";
     }
-    
+
     function bind_submit_event(){
       $support_form.find('button').removeClass('spinner').unbind().click(function(){
         submit_ticket_form_to_jiva();
         return false;
       });
     }
-    
+
     function bind_ticket_form_events() {
       // assigns the jQuery collection used throughout lifecyle of form
       $support_form = jQuery('#hth_support_form');
@@ -67,14 +67,14 @@
         hide_and_reset_widget();
       });
     }
-    
+
     function submit_ticket_form_to_jiva() {
       $support_form.find('button').unbind().removeClass('spinner').addClass('spinner');
       $support_form.find('button span').text("Sending request");
       $support_form.find('#errors').hide();
       send_to_jiva('form_data');
     }
-    
+
     function show_ticket_creation_errors() {
       $.hth_log.warn('ticket creation error');
       $support_form.find("#errors").empty().append("<span><p><strong>Sorry, there was a problem.</strong></p><p>Please ensure that you fill in all the fields.</p></span>").show();
@@ -82,7 +82,7 @@
       bind_submit_event();
       $support_form.find('button span').text("Try again");
     }
-    
+
     function hide_and_reset_widget() {
       $support_form.hide();
       $('#hth_support_form_mask').hide();
@@ -90,7 +90,7 @@
       $support_form.find("#notice").empty().hide();
       $support_form.find('form :input').val("");
     }
-    
+
     function show_support_form_and_mask(){
       bind_ticket_form_events();
       $('#hth_support_form_mask').show();
@@ -108,12 +108,12 @@
         success:  function(data){
           $.hth_log.log('The ticket form was sent.');
           if (data.result == 'failure'){
-           $.hth_log.warn('there was a problem creating the ticket (validation or application error).'); 
+           $.hth_log.warn('there was a problem creating the ticket (validation or application error).');
            show_ticket_creation_errors();
           }
           else {
-            $.hth_log.info('The ticket was created successfully');    
-            $support_form.find("#notice").empty().append("<span><p><strong>Thank you for your feedback.</strong></p><p>We will look into it as soon as possible.</p></span>").show();         
+            $.hth_log.info('The ticket was created successfully');
+            $support_form.find("#notice").empty().append("<span><p><strong>Thank you for your feedback.</strong></p><p>We will look into it as soon as possible.</p></span>").show();
             setTimeout($.hth_log.close_ticket_widget, 3000);
           }
         },
@@ -123,9 +123,9 @@
       });
     }
 
-    
+
     // public methods
-    
+
     var methods = {
       show_log:             function(){ return log_store;               },
       log_length:           function(){ return log_store.length;        },
@@ -133,7 +133,7 @@
       close_ticket_widget:  function(){ hide_and_reset_widget();        }
     };
 
-    $.each(["log", "debug", "info", "warn", "error"], function(i, name) { 
+    $.each(["log", "debug", "info", "warn", "error"], function(i, name) {
       methods[name] = function() {
         var date_stamp = datetime();
         // Make arguments play like an array
@@ -145,11 +145,11 @@
         }
        };
     });
-    
+
     return methods;
 
   })();
-   
+
 })(jQuery);
 
 $.hth_log.info('$.hth_log loaded.');

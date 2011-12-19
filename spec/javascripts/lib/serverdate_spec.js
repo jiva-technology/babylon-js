@@ -1,42 +1,42 @@
 /*global ServerDate: false */
 
 describe("ServerDate", function() {
-  
+
   describe('Class property "skew"', function () {
     it('should default to 0', function () {
       expect( ServerDate.skew ).toEqual( 0 );
     });
-    
+
     it('should be possible to change', function () {
       ServerDate.skew = -20;
-      
+
       expect( ServerDate.skew ).toEqual( -20 );
-      
+
       ServerDate.skew = 20;
-      
+
       expect( ServerDate.skew ).toEqual( 20 );
     });
   });
-  
+
   describe('Class when initialized', function () {
     describe('with no parameters', function () {
       it('should return time that is ahead of Date by "skew" ms', function () {
         ServerDate.skew = 0;
-        
+
         var server_date = (new ServerDate()).valueOf();
         var date        = (new Date()).valueOf();
         expect( Math.round( server_date / 1000 ) ).toEqual( Math.round( date / 1000 ) );
-        
+
         ServerDate.skew = 3000;
         server_date = (new ServerDate()).valueOf();
         date        = (new Date()).valueOf();
         expect( Math.round( server_date / 1000 ) ).toEqual( Math.round( ( date + 3000 ) / 1000 ) );
-        
+
         ServerDate.skew = -6000;
         server_date = (new ServerDate()).valueOf();
         date        = (new Date()).valueOf();
         expect( Math.round( server_date / 1000 ) ).toEqual( Math.round( ( date - 6000 ) / 1000 ) );
-        
+
         ServerDate.skew = -12000;
         server_date = (new ServerDate()).valueOf();
         date        = (new Date()).valueOf();
@@ -44,7 +44,7 @@ describe("ServerDate", function() {
       });
     });
   });
-  
+
   describe('ECMA 262 Edition 1', function () {
 
     describe('15.9.1.1', function () {
@@ -141,8 +141,8 @@ describe("ServerDate", function() {
     });
 
   });
-  
-  
+
+
   describe('ECMA 3.1', function () {
     describe('15.9.3.2', function () {
       it('should return NaN for invalid date strings', function () {
