@@ -1,3 +1,4 @@
 *.swp
 .bundle
+bin/
 sauce_connect.log
