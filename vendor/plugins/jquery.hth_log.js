@@ -133,15 +133,43 @@
       close_ticket_widget:  function(){ hide_and_reset_widget();        }
     };
 
+    // Creates function that will always print arguments to console if possible
+    var createDisplayConsole = function(name){
+      var ie = typeof window.console != 'undefined' &&
+               typeof window.console[name] == "object";
+
+      var normal = typeof window.console != 'undefined' &&
+                   typeof window.console[name] == "function";
+
+      var f;
+      if( ie ){
+        // Smells like IE
+        f = Function.prototype.bind.call(console[name],console);
+      } else if ( normal ) {
+        // Smells like roses
+        f = console[name];
+      }
+      if( f ){
+        return function(args){
+          return f.apply(console,args);
+        };
+      }
+    };
+
     $.each(["log", "debug", "info", "warn", "error"], function(i, name) {
+
+      var display = createDisplayConsole(name);
+
       methods[name] = function() {
         var date_stamp = datetime();
         // Make arguments play like an array
         var args = Array.prototype.slice.call(arguments,0);
         save_log_line(date_stamp, args);
-        if (typeof window.console != 'undefined') {
+
+        // If can print to console, do it
+        if(display){
           var full_args = [date_stamp+":"].concat( args );
-          console[name].apply(console,full_args);
+          display(full_args);
         }
        };
     });
